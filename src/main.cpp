@@ -258,21 +258,24 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
 
-    if (master.get_digital(DIGITAL_L1)) {
+    if (master.get_digital(DIGITAL_L1)) { //Lower Intake
       intakeLower.move(127);
     } else if (master.get_digital(DIGITAL_L2)) {
       intakeLower.move(-127);
     } else intakeLower.move(0);
     
+    if (master.get_digital(DIGITAL_R1)) { //Upper Intake
+      intakeUpper.move(-127);
+    } else if (master.get_digital(DIGITAL_R2)) { //Reversed to
+      intakeUpper.move(127);
+    } else intakeUpper.move(0); //Keep system right
+
     //New press is every click
 
 
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
     }
-
-
-
 
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
