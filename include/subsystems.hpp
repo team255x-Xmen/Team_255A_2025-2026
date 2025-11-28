@@ -11,6 +11,6 @@ extern Drive chassis;
 // inline pros::adi::DigitalIn limit_switch('A');
 
 inline pros::Motor intakeLower(11);
-inline pros::Motor intakeUpper(-12);
+inline pros::Motor intakeUpper(12);
 //inline pros::adi::Pneumatics matchLoadPistons('A', false);
 inline ez::Piston matchLoadPistons('A', false);
