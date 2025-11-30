@@ -258,6 +258,7 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
 
+    /*
     if (master.get_digital(DIGITAL_L1)) { //Lower Intake
       intakeLower.move(127);
     } else if (master.get_digital(DIGITAL_L2)) {
@@ -269,6 +270,7 @@ void opcontrol() {
     } else if (master.get_digital(DIGITAL_R2)) { //Reversed to
       intakeUpper.move(-127);
     } else intakeUpper.move(0); //Keep system right
+    */ //Commented for futured reference
 
     //New press is every click
 
