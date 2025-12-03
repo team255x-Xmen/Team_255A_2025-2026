@@ -243,13 +243,17 @@ void ez_template_extras() {
 void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
+  bool driveStyleSwitch = false; //false is arcade, true is tank
 
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
 
-    //chassis.opcontrol_tank();  // Tank control
-    chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
+    if (driveStyleSwitch) {
+    chassis.opcontrol_tank();  // Tank control
+    } else {
+    chassis.opcontrol_arcade_standard(ez::SPLIT); // Standard split arcade
+    }
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
@@ -272,9 +276,18 @@ void opcontrol() {
     } else intakeUpper.move(0); //Keep system right
     */ //Commented for futured reference
 
-    //New press is every click
+    if (master.get_digital_new_press(DIGITAL_B)) {
+      driveStyleSwitch = !driveStyleSwitch;
+      master.rumble(".");  // Rumble to let the user know the switch happened
+      master.clear_line(3); //Clear bottom line
+      if (driveStyleSwitch) { //Print current drive style
+        master.print(3, 1, "Tank Drive");
+      } else {
+        master.print(3, 1, "Arcade Drive");
+      }
+    }
 
-    //Test for making sure github shows my changess
+    //New press is every click
 
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
