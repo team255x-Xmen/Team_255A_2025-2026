@@ -425,7 +425,7 @@
     },
     "upload_options": {
       "description": "The EZ template Pros-based code for the second comp",
-      "icon": "pros"
+      "icon": "X"
     },
     "use_early_access": false
   }

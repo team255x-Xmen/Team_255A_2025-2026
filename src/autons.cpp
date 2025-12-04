@@ -382,6 +382,7 @@ void measure_offsets() {
 // Make your own autonomous functions here!
 // . . .
 
+//Driver Control or other motor custom PID Example
 //ez::PID functionName(kP, kI, kD, startingTotal, "Name");
 //Motor.move(Name, compute_error(target - avgPos, avgPos));
 

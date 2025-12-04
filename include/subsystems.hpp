@@ -10,9 +10,8 @@ extern Drive chassis;
 // inline pros::Motor intake(1);
 // inline pros::adi::DigitalIn limit_switch('A');
 
-/*inline pros::Motor intakeLower(11);
-inline pros::Motor intakeUpper(12);*/ //Commented for futured reference
 //inline pros::adi::Pneumatics matchLoadPistons('A', false);
+//Prob not needed added in case want to compare
 inline ez::Piston matchLoadPistons('A', false);
 inline ez::Piston UnknownPiston('B', false);
 //Placeholder for the piston once we know what it does
