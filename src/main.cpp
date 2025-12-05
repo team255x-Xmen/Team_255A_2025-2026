@@ -9,7 +9,7 @@
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
-    {4, -5, -7},  // Right Chassis Ports (negative port will reverse it!)
+    {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
 
     9,      // IMU Port
     3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -58,8 +58,8 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      /*{"12 Inch Test\n\nA simple 12 inch drive test without slew", Autonomous12inDrive},
-      {"Turn 90 Degrees\n\nA simple 90 degree turn test without slew", AutonomousTurn90Degrees},*/
+      {"12 Inch Test\n\nA simple 12 inch drive test without slew", Autonomous12inDrive},
+      {"Turn 90 Degrees\n\nA simple 90 degree turn test without slew", AutonomousTurn90Degrees},
       {"Simple Left side\n\nA basic left side auton to score 3-4 balls in the big goal", simpleLeftSide},
       {"Simple Right Side\n\nA basic right side auton to score 3-4 balls in the big goal", simpleRightSide},
       {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP", LeftSoloAWP},
