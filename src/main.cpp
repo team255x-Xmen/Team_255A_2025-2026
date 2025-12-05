@@ -8,8 +8,8 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {1, -2, 3},     // Left Chassis Ports (negative port will reverse it!)
-    {-4, 5, -7},  // Right Chassis Ports (negative port will reverse it!)
+    {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
+    {4, -5, -7},  // Right Chassis Ports (negative port will reverse it!)
 
     9,      // IMU Port
     3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -58,21 +58,15 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      {"Drive\n\nDrive forward and come back", drive_example},
-      {"Turn\n\nTurn 3 times.", turn_example},
-      {"Drive and Turn\n\nDrive forward, turn, come back", drive_and_turn},
-      {"Drive and Turn\n\nSlow down during drive", wait_until_change_speed},
-      {"Swing Turn\n\nSwing in an 'S' curve", swing_example},
-      {"Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining},
-      {"Combine all 3 movements", combining_movements},
-      {"Interference\n\nAfter driving forward, robot performs differently if interfered or not", interfered_example},
-      {"Simple Odom\n\nThis is the same as the drive example, but it uses odom instead!", odom_drive_example},
-      {"Pure Pursuit\n\nGo to (0, 30) and pass through (6, 10) on the way.  Come back to (0, 0)", odom_pure_pursuit_example},
-      {"Pure Pursuit Wait Until\n\nGo to (24, 24) but start running an intake once the robot passes (12, 24)", odom_pure_pursuit_wait_until_example},
-      {"Boomerang\n\nGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
-      {"Boomerang Pure Pursuit\n\nGo to (0, 24, 45) on the way to (24, 24) then come back to (0, 0, 0)", odom_boomerang_injected_pure_pursuit_example},
-      {"Measure Offsets\n\nThis will turn the robot a bunch of times and calculate your offsets for your tracking wheels.", measure_offsets},
-      {"12 Inch Test\n\nA simple 12 inch drive test without slew", Autonomous12inDrive},
+      /*{"12 Inch Test\n\nA simple 12 inch drive test without slew", Autonomous12inDrive},
+      {"Turn 90 Degrees\n\nA simple 90 degree turn test without slew", AutonomousTurn90Degrees},*/
+      {"Simple Left side\n\nA basic left side auton to score 3-4 balls in the big goal", simpleLeftSide},
+      {"Simple Right Side\n\nA basic right side auton to score 3-4 balls in the big goal", simpleRightSide},
+      {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP", LeftSoloAWP},
+      {"Right Solo AWP\n\nAn autonomous for the right side to score the solo AWP", RightSoloAWP},
+      {"Left Duo AWP\n\nAn autonomous for the left side to score in the middle lower goal and match load", LeftDuoAWP},
+      {"Right Duo AWP\n\nAn autonomous for the right side to score in the middle higher goal and match load", RightDuoAWP},
+      {"Skills Auton\n\nA full skills auton that scores as many points as possible", skillsAuton}
   });
 
   // Initialize chassis and auton selector
@@ -262,19 +256,17 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
 
-    /*
-    if (master.get_digital(DIGITAL_L1)) { //Lower Intake
+    if (master.get_digital(DIGITAL_R1)) { //Lower Intake
       intakeLower.move(127);
-    } else if (master.get_digital(DIGITAL_L2)) {
+    } else if (master.get_digital(DIGITAL_R2)) {
       intakeLower.move(-127);
     } else intakeLower.move(0);
     
-    if (master.get_digital(DIGITAL_R1)) { //Upper Intake
+    if (master.get_digital(DIGITAL_L1)) { //Upper Intake
       intakeUpper.move(127);
-    } else if (master.get_digital(DIGITAL_R2)) { //Reversed to
+    } else if (master.get_digital(DIGITAL_L2)) { //Reversed to
       intakeUpper.move(-127);
     } else intakeUpper.move(0); //Keep system right
-    */ //Commented for futured reference
 
     if (master.get_digital_new_press(DIGITAL_B)) {
       driveStyleSwitch = !driveStyleSwitch;
