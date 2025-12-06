@@ -54,31 +54,6 @@ void default_constants() {
 //ez::PID functionName(kP, kI, kD, startingTotal, "Name");
 //Motor.move(Name, compute_error(target - avgPos, avgPos));
 
-void Autonomous12inDrive() {
-
-  //Drive forward 12 inches, at 110/127 volts, with slew
-  //Slew for first 4 inches is at half power (of 110)
-    //Don't mess with the constants, it's fine how it's setup
-    //It's just an example so I don't forget
-  //Waits until motion completes
-  chassis.slew_drive_set(true);
-  chassis.slew_drive_constants_set(4_in, 55);
-  chassis.pid_drive_set(12_in, DRIVE_SPEED, false);
-  chassis.pid_wait_quick();
-
-
-}
-
-void AutonomousTurn90Degrees() {
-
-  //Turn in place to 90 degrees, at 90/127 volts
-  //Waits until motion completes
-  chassis.pid_turn_set(90_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-}
-
-//Add mine. Simple ones above
 //Wait quick is better, but overshoot is same amount of time.
 
 void simpleLeftSide() {
@@ -255,7 +230,7 @@ void RightDuoAWP() {
 
 
 
-void skillsAuton() {
+void skillsAuton() { // I want to eventually be using odom for this
   matchLoadPistons.set(false);
   chassis.pid_drive_set(23_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();

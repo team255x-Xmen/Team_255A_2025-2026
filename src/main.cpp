@@ -13,7 +13,7 @@ ez::Drive chassis(
 
     9,      // IMU Port
     3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    343);   // Wheel RPM = cartridge * (motor gear / wheel gear)
+    343);   // Wheel RPM = cartridge * (motor gear / wheel gear) | Change after competition
 
 // Uncomment the trackers you're using here!
 // - `8` and `9` are smart ports (making these negative will reverse the sensor)
@@ -58,14 +58,12 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      {"12 Inch Test\n\nA simple 12 inch drive test without slew", Autonomous12inDrive},
-      {"Turn 90 Degrees\n\nA simple 90 degree turn test without slew", AutonomousTurn90Degrees},
       {"Simple Left side\n\nA basic left side auton to score 3-4 balls in the big goal", simpleLeftSide},
       {"Simple Right Side\n\nA basic right side auton to score 3-4 balls in the big goal", simpleRightSide},
-      {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP", LeftSoloAWP},
-      {"Right Solo AWP\n\nAn autonomous for the right side to score the solo AWP", RightSoloAWP},
-      {"Left Duo AWP\n\nAn autonomous for the left side to score in the middle lower goal and match load", LeftDuoAWP},
-      {"Right Duo AWP\n\nAn autonomous for the right side to score in the middle higher goal and match load", RightDuoAWP},
+      {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP\n\nUnfinished", LeftSoloAWP},
+      {"Right Solo AWP\n\nAn autonomous for the right side to score the solo AWP\n\nUnfinished", RightSoloAWP},
+      {"Left Duo AWP\n\nAn autonomous for the left side to match load", LeftDuoAWP},
+      {"Right Duo AWP\n\nAn autonomous for the right side to match load", RightDuoAWP},
       {"Skills Auton\n\nA full skills auton that scores as many points as possible", skillsAuton}
   });
 
