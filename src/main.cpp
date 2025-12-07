@@ -13,7 +13,7 @@ ez::Drive chassis(
 
     9,      // IMU Port
     3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    343);   // Wheel RPM = cartridge * (motor gear / wheel gear) | Change after competition
+    320);   // Wheel RPM = cartridge * (motor gear / wheel gear) | Change after competition
 
 // Uncomment the trackers you're using here!
 // - `8` and `9` are smart ports (making these negative will reverse the sensor)
@@ -262,9 +262,9 @@ void opcontrol() {
     
     if (master.get_digital(DIGITAL_L1)) { //Upper Intake
       intakeUpper.move(127);
-    } else if (master.get_digital(DIGITAL_L2)) { //Reversed to
+    } else if (master.get_digital(DIGITAL_L2)) {
       intakeUpper.move(-127);
-    } else intakeUpper.move(0); //Keep system right
+    } else intakeUpper.move(0);
 
     if (master.get_digital_new_press(DIGITAL_B)) {
       driveStyleSwitch = !driveStyleSwitch;
