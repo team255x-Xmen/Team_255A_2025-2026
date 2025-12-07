@@ -64,7 +64,7 @@ void initialize() {
   //Autons
     //name, left bound, right bound, bottom bound, top bound, callback
   
-  autons skills("Skills Auton", 10, 110, 60, 20, skillsAuton);
+  autons skills("Skills Auton", 4, 240, 240, 20, skillsAuton);
 
 
   // Autonomous Selector using LLEMU

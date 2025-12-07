@@ -1,7 +1,6 @@
 #include "main.h"
 #include "liblvgl/lvgl.h"
 #include <vector>
-#include "background.h"
 
 //Overall purpose is to create a class that can have objects added
 //to that have their own position on the brain screen known
@@ -24,10 +23,15 @@
 
 //Class definition is needed
 //Same as header guards
+
+#pragma once
+
 #ifndef MENU_H //If not already made and defined
 #define MENU_H //Start of definition
 
 using namespace std; //So any logs and standard library doesn't need namespace defintiion
+
+extern void drawImage();
 
 class autons{ //Autons class
     public: //Accessed by user. These are called
@@ -97,7 +101,9 @@ class AutonManager{ //This class handles the autons. Make 1
 
     string selectedAuton() { //Return the string name of the selected
         for (auto &a : list) {
-            if (a.isSelected()) return a.nameIs();
+            if (a.isSelected()) {
+                return a.nameIs();
+            }
         }
     }
     
@@ -108,7 +114,7 @@ class AutonManager{ //This class handles the autons. Make 1
     }
 
     void printAutons() {
-        drawImage(); //draws image on screen. Then overlays autons
+        drawImage();
         for (const auto &a : list) {
             a.drawBox(); //Draw every auton onto the screen
         }
@@ -126,7 +132,7 @@ class AutonManager{ //This class handles the autons. Make 1
         list.clear(); //Clear the list that contains autons
         //Removes them from being able to be touched
         //No need to deconstruct them. They're fine how they are
-        drawImage(); //Draws image to remove their UI
+        printAutons();
     }
 
     private:
@@ -147,4 +153,4 @@ class AutonManager{ //This class handles the autons. Make 1
 //Can be defined beforehand.
 //This is to pad out to 150 lines
 
-#endif MENU_H //End of file
+#endif // End of file
