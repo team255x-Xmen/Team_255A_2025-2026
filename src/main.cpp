@@ -1,4 +1,8 @@
 #include "main.h"
+#include "menu.h"
+
+//Initialize and create the auton manager
+AutonManager Kerry; //Creates the manager, named Kerry
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -13,7 +17,7 @@ ez::Drive chassis(
 
     9,      // IMU Port
     3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    320);   // Wheel RPM = cartridge * (motor gear / wheel gear) | Change after competition
+    320);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
 // Uncomment the trackers you're using here!
 // - `8` and `9` are smart ports (making these negative will reverse the sensor)
@@ -31,7 +35,7 @@ ez::tracking_wheel horiz_tracker(8, 2.75, 0.5);  // This tracking wheel is perpe
  */
 void initialize() {
   // Print our branding over your terminal :D
-  ez::ez_template_print();
+  //ez::ez_template_print(); //Remove to add in custom stuff!
 
   pros::delay(500);  // Stop the user from doing anything while legacy ports configure
 
@@ -56,8 +60,15 @@ void initialize() {
   // chassis.opcontrol_curve_buttons_left_set(pros::E_CONTROLLER_DIGITAL_LEFT, pros::E_CONTROLLER_DIGITAL_RIGHT);  // If using tank, only the left side is used.
   // chassis.opcontrol_curve_buttons_right_set(pros::E_CONTROLLER_DIGITAL_Y, pros::E_CONTROLLER_DIGITAL_A);
 
+
+  //Autons
+    //name, left bound, right bound, bottom bound, top bound, callback
+  
+  autons skills("Skills Auton", 10, 110, 60, 20, skillsAuton);
+
+
   // Autonomous Selector using LLEMU
-  ez::as::auton_selector.autons_add({
+  /*ez::as::auton_selector.autons_add({
       {"Simple Left side\n\nA basic left side auton to score 3-4 balls in the big goal", simpleLeftSide},
       {"Simple Right Side\n\nA basic right side auton to score 3-4 balls in the big goal", simpleRightSide},
       {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP\n\nUnfinished", LeftSoloAWP},
@@ -65,11 +76,19 @@ void initialize() {
       {"Left Duo AWP\n\nAn autonomous for the left side to match load", LeftDuoAWP},
       {"Right Duo AWP\n\nAn autonomous for the right side to match load", RightDuoAWP},
       {"Skills Auton\n\nA full skills auton that scores as many points as possible", skillsAuton}
-  });
+  });*/
 
-  // Initialize chassis and auton selector
+
+  // Initialize chassis
   chassis.initialize();
-  ez::as::initialize();
+  //ez::as::initialize(); //Auton Selector init
+
+  //Adding autons to manager
+  Kerry.add(skills);
+
+  
+  //After adding initialize manager
+  Kerry.printAutons(); //Set up screen after adding autons
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
 }
 
@@ -80,6 +99,16 @@ void initialize() {
  */
 void disabled() {
   // . . .
+}
+
+void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
+  pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
+  Kerry.screenTouched(status.x, status.y);
+  master.clear_line(3);
+  master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
+  master.rumble("..");
+  //selectedAuton gets converted to a char string. How it works
+  Kerry.store(); //Stores selected
 }
 
 /**
@@ -93,6 +122,11 @@ void disabled() {
  */
 void competition_initialize() {
   // . . .
+  pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
+  if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) {
+    Kerry.store(); //Stores just to make sure
+    Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
+  }
 }
 
 /**
@@ -107,6 +141,8 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
+  Kerry.store(); //Stores before clearing screen
+  Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
   chassis.pid_targets_reset();                // Resets PID targets to 0
   chassis.drive_imu_reset();                  // Reset gyro position to 0
   chassis.drive_sensor_reset();               // Reset drive sensors to 0
@@ -126,7 +162,8 @@ void autonomous() {
   to be consistent
   */
 
-  ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
+  //ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
+  Kerry.runSelectedAuton(); //Run selected auton
 }
 
 /**
