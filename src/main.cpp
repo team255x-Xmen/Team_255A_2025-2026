@@ -24,8 +24,36 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(8, 2.75, 0.5);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(8, 2.75, 1);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
+
+bool selectorEnable = true;
+
+void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
+  pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
+  /*pros::screen::print(TEXT_LARGE, 1, "Last X: %d", status.x);
+  pros::screen::print(TEXT_LARGE, 3, "Last Y: %d", status.y);*/
+  Kerry.screenTouched(status.x, status.y);
+  master.clear_line(3);
+  master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
+  master.rumble("..");
+  Kerry.store(); //Stores selected
+}
+
+int autonSelector() { //This manages selector when not connected
+  while (selectorEnable) {
+    pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
+    if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) {
+      Kerry.store(); //Stores just to make sure
+      Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
+      selectorEnable = false; //Stops the loop
+    }
+
+    pros::delay(20);
+  }
+
+  return 1;
+}
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -62,9 +90,21 @@ void initialize() {
 
 
   //Autons
-    //name, left bound, right bound, bottom bound, top bound, callback
+    //name, left bound, right bound, top bound, bottom bound, callback
+    //Keep width 114 pixels or less
+    //Height should be 112 pixels or less
+  //480x240 pixels is brain screen size. 4 pixel buffer
   
-  autons skills("Skills Auton", 4, 240, 240, 20, skillsAuton);
+  //First Row
+  autons leftSimple("L Simple", 4, 116, 4, 116, simpleLeftSide);
+  autons rightSimple("R Simple", 124, 236, 4, 116, simpleRightSide);
+  autons leftSolo("L AWP", 244, 356, 4, 116, LeftSoloAWP);
+  autons rightSolo("R AWP", 364, 476, 4, 116, RightSoloAWP);
+
+  //Second Row
+  autons leftDuo("L 7 Ball", 4, 116, 124, 236, LeftDuoAWP);
+  autons rightDuo("R 7 Ball", 124, 236, 124, 236, RightDuoAWP);
+  autons skills("Skills", 244, 356, 124, 236, skillsAuton);
 
 
   // Autonomous Selector using LLEMU
@@ -84,11 +124,22 @@ void initialize() {
   //ez::as::initialize(); //Auton Selector init
 
   //Adding autons to manager
+
+  //Top row
+  Kerry.add(leftSimple);
+  Kerry.add(rightSimple);
+  Kerry.add(leftSolo);
+  Kerry.add(rightSolo);
+
+  //Bottom Row
+  Kerry.add(leftDuo);
+  Kerry.add(rightDuo);
   Kerry.add(skills);
 
   
   //After adding initialize manager
   Kerry.printAutons(); //Set up screen after adding autons
+  pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
 }
 
@@ -101,16 +152,6 @@ void disabled() {
   // . . .
 }
 
-void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
-  pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
-  Kerry.screenTouched(status.x, status.y);
-  master.clear_line(3);
-  master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
-  master.rumble("..");
-  //selectedAuton gets converted to a char string. How it works
-  Kerry.store(); //Stores selected
-}
-
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
  * Management System or the VEX Competition Switch. This is intended for
@@ -121,12 +162,8 @@ void screenTouch() { //Function to check where screen is pressed and then feed t
  * starts.
  */
 void competition_initialize() {
-  // . . .
-  pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
-  if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) {
-    Kerry.store(); //Stores just to make sure
-    Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
-  }
+  //...
+
 }
 
 /**
@@ -141,6 +178,7 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
+  selectorEnable = false; //Turns it off
   Kerry.store(); //Stores before clearing screen
   Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
   chassis.pid_targets_reset();                // Resets PID targets to 0

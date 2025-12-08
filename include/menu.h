@@ -33,22 +33,24 @@ using namespace std; //So any logs and standard library doesn't need namespace d
 
 extern void drawImage();
 
+extern int color; //variable to use as color
+
 class autons{ //Autons class
     public: //Accessed by user. These are called
 
-        autons(string n, int l, int r, int b, int t, void (*callback)()) { //Constructor
+        autons(string n, int l, int r, int t, int b, void (*callback)()) { //Constructor
             this->name = n; //Set name to n
             this->positionLeft = l; //set to l
             this->positionRight = r; //set to r
-            this->positionBottom = b; //set to b
             this->positionTop = t; //set to t
+            this->positionBottom = b; //set to b
             this->callback = callback; //set to callback
         }
 
         bool containsPoint(int x, int y) const { //Run when brain clicked
             //Checks x point, checks y point. X for l & r, Y for b & t
             return ((x >= positionLeft&&x <= positionRight)&&
-                    (y >= positionBottom&&y <= positionTop)); //Returns if all are true
+                    (y <= positionBottom&&y >= positionTop)); //Returns if all are true
         }
 
         void setSelected(bool a) { //Function to set selected. Setter
@@ -61,10 +63,10 @@ class autons{ //Autons class
         }
 
         void drawBox() const { //Call when drawing box after making background
-            pros::screen::set_pen(0xFFFF00); //Yellow
-            pros::screen::draw_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
-            pros::screen::set_pen(0x000000); //Black
-            pros::screen::print(pros::E_TEXT_MEDIUM_CENTER, ((positionLeft + positionRight)/2), ((positionTop + positionBottom)/2), name.c_str());
+            pros::screen::set_pen(color); //Yellow
+            pros::screen::fill_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
+            pros::screen::set_pen(0x0000FF); //Blue
+            pros::screen::print(pros::E_TEXT_MEDIUM, (positionLeft + 8), ((positionTop + positionBottom)/2), name.c_str());
         }
     
         string nameIs() const { //Getter for name
@@ -97,14 +99,21 @@ class AutonManager{ //This class handles the autons. Make 1
         for (auto &a : list) { //For every item in list (called a)
             a.setSelected(a.containsPoint(x, y)); //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
+
+        for (const auto &a : list) {
+            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
+            a.drawBox(); //Draw every auton onto the screen
+        }; //Update visually. No need for background redraw, the boxes stay in place
     } 
 
     string selectedAuton() { //Return the string name of the selected
+        string b = "";
         for (auto &a : list) {
             if (a.isSelected()) {
-                return a.nameIs();
+                b = a.nameIs();
             }
         }
+        return b;
     }
     
     void runSelectedAuton() { //Run the auton
@@ -115,7 +124,12 @@ class AutonManager{ //This class handles the autons. Make 1
 
     void printAutons() {
         drawImage();
+
+        pros::delay(10); //Tiny Delay so brain screen can catch up
+        //If it moves on before refresh rate can catch up it doesn't save
+
         for (const auto &a : list) {
+            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
             a.drawBox(); //Draw every auton onto the screen
         }
     }
@@ -132,7 +146,7 @@ class AutonManager{ //This class handles the autons. Make 1
         list.clear(); //Clear the list that contains autons
         //Removes them from being able to be touched
         //No need to deconstruct them. They're fine how they are
-        printAutons();
+        printAutons(); //Rerun. Should remove all boxes because none are left
     }
 
     private:
