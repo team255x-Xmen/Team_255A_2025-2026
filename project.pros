@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "255A Second Comp",
+    "project_name": "SUGAR RUSH!!!!",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -424,8 +424,8 @@
       }
     },
     "upload_options": {
-      "description": "The EZ template Pros-based code for the second comp",
-      "icon": "X"
+      "description": "255A's code for SUGAR RUSH!!!!!",
+      "icon": "pros"
     },
     "use_early_access": false
   }

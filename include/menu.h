@@ -100,7 +100,7 @@ class AutonManager{ //This class handles the autons. Make 1
             a.setSelected(a.containsPoint(x, y)); //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
 
-        for (const auto &a : list) {
+        for (const auto &a : list) { //Redraw after finding new selected
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
             a.drawBox(); //Draw every auton onto the screen
         }; //Update visually. No need for background redraw, the boxes stay in place
@@ -126,7 +126,7 @@ class AutonManager{ //This class handles the autons. Make 1
         drawImage();
 
         pros::delay(10); //Tiny Delay so brain screen can catch up
-        //If it moves on before refresh rate can catch up it doesn't save
+        //If it moves on before refresh rate can catch up it doesn't save autons
 
         for (const auto &a : list) {
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
@@ -143,14 +143,20 @@ class AutonManager{ //This class handles the autons. Make 1
     }
 
     void terminateAutons() { //Run after storing
+        terminated = true; //Sets to true
         list.clear(); //Clear the list that contains autons
         //Removes them from being able to be touched
         //No need to deconstruct them. They're fine how they are
         printAutons(); //Rerun. Should remove all boxes because none are left
     }
 
+    bool hasTerminated() const { //Read-only for checking if terminated already
+        return terminated; //Returns state of variable
+    }
+
     private:
 
+    bool terminated = false; //False by default | Helper to check if already terminated
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
 };

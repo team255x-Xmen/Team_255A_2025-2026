@@ -40,14 +40,18 @@ void screenTouch() { //Function to check where screen is pressed and then feed t
   Kerry.store(); //Stores selected
 }
 
-int autonSelector() { //This manages selector when not connected
+int autonSelector() { //This is what runs the callbacks
   while (selectorEnable) {
     pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
-    if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) {
+    if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) { //Can only run when not connected to field
       Kerry.store(); //Stores just to make sure
       Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
       selectorEnable = false; //Stops the loop
-    }
+    } //Not connected test to make sure the terminate and store work properly
+
+    if (Kerry.hasTerminated()) selectorEnable = false; //If terminated elsewhere, end loop
+    //Used if autonomous happens before confirmation
+    //We don't want this running through the entire program
 
     pros::delay(20);
   }
@@ -178,9 +182,12 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
-  selectorEnable = false; //Turns it off
-  Kerry.store(); //Stores before clearing screen
-  Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
+  if (!Kerry.hasTerminated()) { //If it hasn't happened
+    Kerry.store(); //Stores before clearing screen
+    Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
+  } //Otherwise no need to store empty vector and redraw screen
+  //This allows for autonomous to be called multiple times in a single program run
+
   chassis.pid_targets_reset();                // Resets PID targets to 0
   chassis.drive_imu_reset();                  // Reset gyro position to 0
   chassis.drive_sensor_reset();               // Reset drive sensors to 0

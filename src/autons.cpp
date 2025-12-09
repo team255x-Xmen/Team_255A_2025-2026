@@ -238,7 +238,7 @@ void skillsAuton() { // I want to eventually be using odom for this
                        {{-33.227_in, 23.162_in}, fwd, DRIVE_SPEED},
                        {{-24.253_in, 25.102_in, 0_deg}, fwd, 60}},
                       true); //To first group of 4
-  chassis.pid_wait_until({-33.227_in, 23.162_in});
+  chassis.pid_wait_until_index(1); //Waits until it passes -33.227 and 23.162
   intakeLower.move(127);
   intakeUpper.move(127);
   chassis.pid_wait();
@@ -258,7 +258,7 @@ void skillsAuton() { // I want to eventually be using odom for this
                         {{44.383_in, 40.381_in}, fwd, DRIVE_SPEED},
                         {{33.469_in, 47.9_in, 0_deg}, fwd, DRIVE_SPEED}},
                        true); //To line up with goal
-  chassis.pid_wait_until({44.383_in, 40.382_in});
+  chassis.pid_wait_until_index(1);
   intakeLower.move(0); //Stop on the way
   intakeUpper.move(0); //Same thing
   chassis.pid_wait();
@@ -308,7 +308,7 @@ void skillsAuton() { // I want to eventually be using odom for this
                         {{40.26_in, -14.188_in}, fwd, DRIVE_SPEED},
                         {{22.798_in, -22.677_in, 180_deg}, fwd, 60}},
                         true); //Movement to third group of 4
-  chassis.pid_wait_until({40.26_in, -14.28_in});
+  chassis.pid_wait_until_index(1);
   intakeLower.move(127); //Start spinning before arriving
   chassis.pid_wait();
   pros::delay(400); //Time to grab
@@ -326,7 +326,7 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_odom_set({{{-40.017_in, -30.923_in}, fwd, DRIVE_SPEED},
                         {{-42.658_in, -48_in, 180_deg}, fwd, DRIVE_SPEED}},
                         true); //To line up with goal
-  chassis.pid_wait_until({-42.658_in, -48_in});
+  chassis.pid_wait_until_index(1);
   intakeLower.move(0); //Stop moving to prevent clogging
   intakeUpper.move(0); //Same thing
   chassis.pid_wait();
