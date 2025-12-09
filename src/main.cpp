@@ -16,7 +16,7 @@ ez::Drive chassis(
     {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
 
     9,      // IMU Port
-    3.5,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
+    3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     320);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
 // Uncomment the trackers you're using here!
@@ -24,15 +24,13 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(8, 2.75, 1);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(8, 2.75, 2);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true;
 
 void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
   pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
-  /*pros::screen::print(TEXT_LARGE, 1, "Last X: %d", status.x);
-  pros::screen::print(TEXT_LARGE, 3, "Last Y: %d", status.y);*/
   Kerry.screenTouched(status.x, status.y);
   master.clear_line(3);
   master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
@@ -83,7 +81,7 @@ void initialize() {
   // Configure your chassis controls
   chassis.opcontrol_curve_buttons_toggle(true);   // Enables modifying the controller curve with buttons on the joysticks
   chassis.opcontrol_drive_activebrake_set(0.0);   // Sets the active brake kP. We recommend ~2.  0 will disable.
-  //chassis.opcontrol_curve_default_set(0.0, 0.0);  // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
+  chassis.opcontrol_curve_default_set(0.0, 0.0);  // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
 
   // Set the drive to your own constants from autons.cpp!
   default_constants();
@@ -100,7 +98,7 @@ void initialize() {
   //480x240 pixels is brain screen size. 4 pixel buffer
   
   //First Row
-  autons leftSimple("L Simple", 4, 116, 4, 116, simpleLeftSide);
+  autons leftSimple("L Simple", 4, 116, 4, 116, simpleLeftSide, true); //Starts selected
   autons rightSimple("R Simple", 124, 236, 4, 116, simpleRightSide);
   autons leftSolo("L AWP", 244, 356, 4, 116, LeftSoloAWP);
   autons rightSolo("R AWP", 364, 476, 4, 116, RightSoloAWP);
@@ -110,22 +108,10 @@ void initialize() {
   autons rightDuo("R 7 Ball", 124, 236, 124, 236, RightDuoAWP);
   autons skills("Skills", 244, 356, 124, 236, skillsAuton);
 
-
-  // Autonomous Selector using LLEMU
-  /*ez::as::auton_selector.autons_add({
-      {"Simple Left side\n\nA basic left side auton to score 3-4 balls in the big goal", simpleLeftSide},
-      {"Simple Right Side\n\nA basic right side auton to score 3-4 balls in the big goal", simpleRightSide},
-      {"Left Solo AWP\n\nAn autonomous for the left side to score the solo AWP\n\nUnfinished", LeftSoloAWP},
-      {"Right Solo AWP\n\nAn autonomous for the right side to score the solo AWP\n\nUnfinished", RightSoloAWP},
-      {"Left Duo AWP\n\nAn autonomous for the left side to match load", LeftDuoAWP},
-      {"Right Duo AWP\n\nAn autonomous for the right side to match load", RightDuoAWP},
-      {"Skills Auton\n\nA full skills auton that scores as many points as possible", skillsAuton}
-  });*/
-
+  //Initialization
 
   // Initialize chassis
   chassis.initialize();
-  //ez::as::initialize(); //Auton Selector init
 
   //Adding autons to manager
 
@@ -142,7 +128,7 @@ void initialize() {
 
   
   //After adding initialize manager
-  Kerry.printAutons(); //Set up screen after adding autons
+  Kerry.printAutons(); //Set up screen after adding autons. Initializes
   pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
 }
@@ -207,8 +193,7 @@ void autonomous() {
   to be consistent
   */
 
-  //ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
-  Kerry.runSelectedAuton(); //Run selected auton
+  Kerry.runSelectedAuton(); //Calls selected Auton
 }
 
 /**
@@ -319,6 +304,8 @@ void opcontrol() {
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
   bool driveStyleSwitch = false; //false is arcade, true is tank
 
+  chassis.opcontrol_joystick_practicemode_toggle(true); //Comment or remove at comps
+
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
@@ -351,11 +338,11 @@ void opcontrol() {
     if (master.get_digital_new_press(DIGITAL_B)) {
       driveStyleSwitch = !driveStyleSwitch;
       master.rumble(".");  // Rumble to let the user know the switch happened
-      master.clear_line(3); //Clear bottom line
+      master.clear_line(2); //Clear bottom line
       if (driveStyleSwitch) { //Print current drive style
-        master.print(3, 1, "Tank Drive");
+        master.print(2, 1, "Tank Drive");
       } else {
-        master.print(3, 1, "Arcade Drive");
+        master.print(2, 1, "Arcade Drive");
       }
     }
 

@@ -47,6 +47,16 @@ class autons{ //Autons class
             this->callback = callback; //set to callback
         }
 
+        autons(string n, int l, int r, int t, int b, void (*callback)(), bool s) { //Alternative Contructor for starting Selected
+            this->name = n; //Set name to n
+            this->positionLeft = l; //set to l
+            this->positionRight = r; //set to r
+            this->positionTop = t; //set to t
+            this->positionBottom = b; //set to b
+            this->callback = callback; //set to callback
+            this->Selected = s; //set to Selecteds
+        }
+
         bool containsPoint(int x, int y) const { //Run when brain clicked
             //Checks x point, checks y point. X for l & r, Y for b & t
             return ((x >= positionLeft&&x <= positionRight)&&
@@ -103,7 +113,7 @@ class AutonManager{ //This class handles the autons. Make 1
         for (const auto &a : list) { //Redraw after finding new selected
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
             a.drawBox(); //Draw every auton onto the screen
-        }; //Update visually. No need for background redraw, the boxes stay in place
+        } //Update visually. No need for background redraw, the boxes stay in place
     } 
 
     string selectedAuton() { //Return the string name of the selected
@@ -171,6 +181,5 @@ class AutonManager{ //This class handles the autons. Make 1
 //So it maintains the authority
 //Use add to add autons.
 //Can be defined beforehand.
-//This is to pad out to 150 lines
 
 #endif // End of file
