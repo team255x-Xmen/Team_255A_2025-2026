@@ -96,17 +96,20 @@ void initialize() {
     //Keep width 114 pixels or less
     //Height should be 112 pixels or less
   //480x240 pixels is brain screen size. 4 pixel buffer
-  
+
+  std::vector<autons> autonPrograms; //Vector to store the autons
+  //This will reduce how much code I need to add, and abstracts it
+
   //First Row
-  autons leftSimple("L Simple", 4, 116, 4, 116, simpleLeftSide, true); //Starts selected
-  autons rightSimple("R Simple", 124, 236, 4, 116, simpleRightSide);
-  autons leftSolo("L AWP", 244, 356, 4, 116, LeftSoloAWP);
-  autons rightSolo("R AWP", 364, 476, 4, 116, RightSoloAWP);
+  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSide, true)); //Each gets
+  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSide));    //added to the vector
+  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWP));           //with all the qualities
+  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWP));          //So later the vector
 
   //Second Row
-  autons leftDuo("L 7 Ball", 4, 116, 124, 236, LeftDuoAWP);
-  autons rightDuo("R 7 Ball", 124, 236, 124, 236, RightDuoAWP);
-  autons skills("Skills", 244, 356, 124, 236, skillsAuton);
+  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWP));    //Can just be run through
+  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWP)); //And reduce lines
+  autonPrograms.push_back(autons("Skills", 244, 356, 124, 236, skillsAuton));   //And stop me from forgetting stuff
 
   //Initialization
 
@@ -115,16 +118,10 @@ void initialize() {
 
   //Adding autons to manager
 
-  //Top row
-  Kerry.add(leftSimple);
-  Kerry.add(rightSimple);
-  Kerry.add(leftSolo);
-  Kerry.add(rightSolo);
-
-  //Bottom Row
-  Kerry.add(leftDuo);
-  Kerry.add(rightDuo);
-  Kerry.add(skills);
+  for (int i = 0; i < autonPrograms.size(); i++) { //For loop to run through the vector
+    Kerry.add(autonPrograms[i]); //Adds every auton added above
+  } //Replaces adding individual autons. You create them, adding them to the vector,
+  //And the computer handles the rest It automatically adds everything in the vector
 
   
   //After adding initialize manager

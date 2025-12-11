@@ -13,13 +13,12 @@
 //Now you can add an auton with a constructor that gives its information
 //Then we need to add something into the class that checks if the brain is touched
 //In the bounds of l, r, b, and t
-//Unless there is a way to automatically have that known
+//Unless there is a way to automatically have that known | Look into that
 
 //When checked, set a boolean
 //When auton runs, look through every member of the class
 //Find which one has the boolean set to true
 //Auton should then use the callback associated.
-//Find out how.
 
 //Class definition is needed
 //Same as header guards
@@ -54,7 +53,7 @@ class autons{ //Autons class
             this->positionTop = t; //set to t
             this->positionBottom = b; //set to b
             this->callback = callback; //set to callback
-            this->Selected = s; //set to Selecteds
+            this->Selected = s; //set to Selected
         }
 
         bool containsPoint(int x, int y) const { //Run when brain clicked
@@ -171,15 +170,23 @@ class AutonManager{ //This class handles the autons. Make 1
     void (*storedCallback)() = nullptr; //Initialized for safety
 };
 
-//autons should not be used
+//autons should not be used to interact with them besides creation
 //Instead use the manager to call things
 //It automatically interacts with autons
-//Safely
+//Safely (interacts with every member)
 
 //If more functionality is needed
 //Add to AutonManager
 //So it maintains the authority
 //Use add to add autons.
 //Can be defined beforehand.
+
+//Also:
+//Come up with formula that takes in what autons you want
+//Plus their name and callback
+//And auto figure out pixel requirements
+//Can be split into two rows for easier code writing.
+
+//Not immediately needed but an option for the future
 
 #endif // End of file
