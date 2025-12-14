@@ -175,15 +175,6 @@ class AutonManager{ //This class handles the autons. Make 1
 
     void screenTouched(int x, int y) {
 
-        /*
-         * Issue:
-         * This runs multiple times per press
-         * That's not good, so, I need to:
-         * Learn how atomics work
-         * And find more solutions
-         * Cause it's not the best rn
-        */
-
         for (auto &a : list) { //For every item in list (called a)
             a.setSelected(a.containsPoint(x, y)); //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
@@ -193,10 +184,6 @@ class AutonManager{ //This class handles the autons. Make 1
         }
 
         textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
-
-        ++iterations;
-        string newName = to_string(iterations);
-        pros::screen::print(pros::E_TEXT_LARGE, 2, 120, newName.c_str());
 
         for (const auto &a : list) { //Redraw after finding new selected
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
@@ -208,7 +195,6 @@ class AutonManager{ //This class handles the autons. Make 1
                 *(, 1) and : 1 are added so both sides are int
                 *And I don't have to add something to the false branch*/
             }
-            pros::delay(8); //Delay so brain can catch up
         } //Update visually. No need for background redraw, the boxes stay in place
         cMNG[0].draw(); //Draws color manager (Once)
     } 
@@ -262,11 +248,15 @@ class AutonManager{ //This class handles the autons. Make 1
         cMNG.clear(); //Clears storage so it doesn't reprint
         //Removes them from being able to be touched
         //No need to deconstruct them. They're fine how they are
-        printAutons(); //Rerun. Should remove all boxes because none are left
+        drawBG(); //Rerun Removes all boxes
     }
 
     bool hasTerminated() const { //Read-only for checking if terminated already
         return terminated; //Returns state of variable
+    }
+
+    void drawBG() {
+        drawImage();
     }
 
     private:
@@ -275,7 +265,6 @@ class AutonManager{ //This class handles the autons. Make 1
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
     vector<colorManager> cMNG;
-    int iterations = 0;
 };
 
 //autons should not be used to interact with them besides creation

@@ -28,19 +28,27 @@ ez::tracking_wheel horiz_tracker(-8, 2.75, 2);  // This tracking wheel is perpen
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true;
+std::atomic<bool> secondLock{false};
 
 void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
-  pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
-  Kerry.screenTouched(status.x, status.y);
-  master.clear_line(3);
-  master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
-  master.rumble("..");
-  Kerry.store(); //Stores selected
+  if (!secondLock.exchange(true)) {
+    pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
+    Kerry.screenTouched(status.x, status.y);
+    master.clear_line(3);
+    master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
+    master.rumble("..");
+    Kerry.store(); //Stores selected
+  }
+}
+
+void screenReleased() {
+  secondLock.store(false);
 }
 
 int autonSelector() { //This is what runs the callbacks
   while (selectorEnable) {
     pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
+    pros::screen::touch_callback(screenReleased, TOUCH_RELEASED); //Resets for next activation
     if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) { //Can only run when not connected to field
       Kerry.store(); //Stores just to make sure
       Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone

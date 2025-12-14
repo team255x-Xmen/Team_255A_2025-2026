@@ -56,74 +56,122 @@ void default_constants() {
 
 //Wait quick is better, but overshoot is same amount of time.
 
-void simpleLeftSideB() {
+void simpleLeft() { //Put full left side code here
+
+}
+
+
+void simpleRight() { //Put full code here
+
+}
+
+
+void leftDuo() { //Full code
+
+}
+
+
+void rightDuo() { //I think you get the drill at this point
+
+}
+
+
+void leftSolo() { //But I don't care
+
+}
+
+
+void rightSolo() { //Last one!
+
+}
+
+
+
+
+
+
+void simpleLeftSideB() { //Only use for setting odom xyt
   
+  simpleLeft(); //Runs the actual (both sides can run the same)
+  //As long as no odom is used
+  //This is just for coordinate setting
 }
 
 
 
-void simpleLeftSideR() {
+void simpleLeftSideR() { //Only use for setting odom xyt
 
+  simpleLeft();
 }
 
 
 
-void simpleRightSideB() {
+void simpleRightSideB() { //Only use for setting odom xyt
   
+  simpleRight();
 }
 
 
 
-void simpleRightSideR() {
+void simpleRightSideR() { //Only use for setting odom xyt
   
+  simpleRight();
 }
 
 
 
-void LeftSoloAWPB() {
+void LeftSoloAWPB() { //Only use for setting odom xyt
 
+  leftSolo();
 }
 
 
 
-void LeftSoloAWPR() {
+void LeftSoloAWPR() { //Only use for setting odom xyt
 
+  leftSolo();
 }
 
 
 
-void RightSoloAWPB() {
+void RightSoloAWPB() { //Only use for setting odom xyt
 
+  rightSolo();
 }
 
 
 
-void RightSoloAWPR() {
+void RightSoloAWPR() { //Only use for setting odom xyt
 
+  rightSolo();
 }
 
 
 
-void LeftDuoAWPB() {
+void LeftDuoAWPB() { //Only use for setting odom xyt
   
+  leftDuo();
 }
 
 
 
-void LeftDuoAWPR() {
+void LeftDuoAWPR() { //Only use for setting odom xyt
   
+  leftDuo();
 }
 
 
 
-void RightDuoAWPB() {
+void RightDuoAWPB() { //Only use for setting odom xyt
   
+  rightDuo();
 }
 
 
 
-void RightDuoAWPR() {
+void RightDuoAWPR() { //Only use for setting odom xyt
   
+  rightDuo();
 }
 
 
