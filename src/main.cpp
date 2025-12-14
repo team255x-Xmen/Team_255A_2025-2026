@@ -24,7 +24,7 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(8, 2.75, 2);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(-8, 2.75, 2);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true;
@@ -100,21 +100,41 @@ void initialize() {
   std::vector<autons> autonPrograms; //Vector to store the autons
   //This will reduce how much code I need to add, and abstracts it
 
+  //Blue
+
   //First Row
-  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSide, true)); //Each gets
-  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSide));    //added to the vector
-  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWP));           //with all the qualities
-  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWP));          //So later the vector
+  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideB, true, true)); //Each gets
+  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideB, true));    //added to the vector
+  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWPB, true));           //with all the qualities
+  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPB, true));          //So later the vector
 
   //Second Row
-  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWP));    //Can just be run through
-  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWP)); //And reduce lines
-  autonPrograms.push_back(autons("Skills", 244, 356, 124, 236, skillsAuton));   //And stop me from forgetting stuff
+  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWPB, true));    //Can just be run through
+  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWPB, true)); //And reduce lines
+
+  //Red
+
+  //First Row
+  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideR, false, true)); //Each gets
+  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideR, false));    //added to the vector
+  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWPR, false));           //with all the qualities
+  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPR, false));          //So later the vector
+
+  //Second Row
+  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWPR, false));    //Can just be run through
+  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWPR, false)); //And reduce lines
+
+  //Skills
+  autonPrograms.push_back(autons("Skills", 244, 356, 124, 236, skillsAuton, true, false, true)); //And stop me from forgetting stuff
+  //Booleans: Is blue (not important), doesn't start selected, and is skills
 
   //Initialization
 
   // Initialize chassis
   chassis.initialize();
+
+  //Initialize color manager
+  colorManager Ethan(364, 476, 124, 236); //It's me!
 
   //Adding autons to manager
 
@@ -122,6 +142,10 @@ void initialize() {
     Kerry.add(autonPrograms[i]); //Adds every auton added above
   } //Replaces adding individual autons. You create them, adding them to the vector,
   //And the computer handles the rest It automatically adds everything in the vector
+
+
+  //Add color manager
+  Kerry.addColorManager(Ethan);
 
   
   //After adding initialize manager
@@ -301,7 +325,7 @@ void opcontrol() {
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
   bool driveStyleSwitch = false; //false is arcade, true is tank
 
-  chassis.opcontrol_joystick_practicemode_toggle(true); //Comment or remove at comps
+  //chassis.opcontrol_joystick_practicemode_toggle(true); //Comment or remove at comps
 
   while (true) {
     // Gives you some extras to make EZ-Template ezier

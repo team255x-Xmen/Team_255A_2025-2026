@@ -3,6 +3,7 @@
 lv_obj_t* image;
 
 int color; //Added in code somewhere. Can't harm us anymore
+int textColor;
 
 void drawImage() {
     LV_IMG_DECLARE(backgroundPhoto); //Declares the file

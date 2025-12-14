@@ -56,177 +56,75 @@ void default_constants() {
 
 //Wait quick is better, but overshoot is same amount of time.
 
-void simpleLeftSide() {
-  matchLoadPistons.set(false);
-  chassis.pid_drive_set(23_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(-90_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  intakeLower.move(127);
-  chassis.pid_drive_set(8_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(0_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(14_in, 40, true);
-  chassis.pid_wait_until(4_in);
-  //matchLoadPistons.set(true);
-  chassis.pid_wait();
-  pros::delay(1000);
-  chassis.pid_turn_set(-120_deg, 50, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(28_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  matchLoadPistons.set(false);
-  chassis.pid_turn_set(-180_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-13_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  intakeUpper.move(127);
-  pros::delay(1000);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
+void simpleLeftSideB() {
+  
 }
 
 
 
-
-void simpleRightSide() {
-  matchLoadPistons.set(false);
-  chassis.pid_drive_set(23_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(90_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  intakeLower.move(127);
-  chassis.pid_drive_set(8_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(0_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(14_in, 40, true);
-  chassis.pid_wait_until(4_in);
-  //matchLoadPistons.set(true);
-  chassis.pid_wait();
-  pros::delay(1000);
-  chassis.pid_turn_set(120_deg, 50, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(28_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  matchLoadPistons.set(false);
-  chassis.pid_turn_set(180_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-13_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  intakeUpper.move(127);
-  pros::delay(1000);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
-}
-
-
-
-
-void LeftSoloAWP() {
+void simpleLeftSideR() {
 
 }
 
 
 
+void simpleRightSideB() {
+  
+}
 
-void RightSoloAWP() {
+
+
+void simpleRightSideR() {
+  
+}
+
+
+
+void LeftSoloAWPB() {
 
 }
 
 
 
+void LeftSoloAWPR() {
 
-void LeftDuoAWP() {
-  matchLoadPistons.set(false);
-  chassis.pid_drive_set(23_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(-90_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  intakeLower.move(127);
-  chassis.pid_drive_set(8_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(0_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(12_in, 40, true);
-  chassis.pid_wait_until(4_in);
-  matchLoadPistons.set(true);
-  chassis.pid_wait();
-  pros::delay(500);
-  chassis.pid_turn_set(-120_deg, 50, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(-180_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-11_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  intakeUpper.move(127);
-  pros::delay(400);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
-  pros::delay(1600);
-  intakeUpper.move(0);
-  chassis.pid_drive_set(26_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  pros::delay(2200);
-  chassis.pid_drive_set(-26_in, DRIVE_SPEED, true);
-  intakeUpper.move(127);
-  pros::delay(400);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
 }
 
 
 
+void RightSoloAWPB() {
 
-void RightDuoAWP() {
-  matchLoadPistons.set(false);
-  chassis.pid_drive_set(23_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(90_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  intakeLower.move(127);
-  chassis.pid_drive_set(8_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(0_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(12_in, 40, true);
-  chassis.pid_wait_until(4_in);
-  matchLoadPistons.set(true);
-  chassis.pid_wait();
-  pros::delay(500);
-  chassis.pid_turn_set(120_deg, 50, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_set(180_deg, TURN_SPEED, true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-11_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  intakeUpper.move(127);
-  pros::delay(400);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
-  pros::delay(1600);
-  intakeUpper.move(0);
-  chassis.pid_drive_set(26_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  pros::delay(2200);
-  chassis.pid_drive_set(-26_in, DRIVE_SPEED, true);
-  intakeUpper.move(127);
-  pros::delay(400);
-  intakeLower.move(-127);
-  pros::delay(200);
-  intakeLower.move(127);
 }
 
+
+
+void RightSoloAWPR() {
+
+}
+
+
+
+void LeftDuoAWPB() {
+  
+}
+
+
+
+void LeftDuoAWPR() {
+  
+}
+
+
+
+void RightDuoAWPB() {
+  
+}
+
+
+
+void RightDuoAWPR() {
+  
+}
 
 
 

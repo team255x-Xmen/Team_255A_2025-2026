@@ -33,27 +33,42 @@ using namespace std; //So any logs and standard library doesn't need namespace d
 extern void drawImage();
 
 extern int color; //variable to use as color
+extern int textColor; //Variable for text color
 
 class autons{ //Autons class
     public: //Accessed by user. These are called
 
-        autons(string n, int l, int r, int t, int b, void (*callback)()) { //Constructor
+        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue) { //Constructor
             this->name = n; //Set name to n
             this->positionLeft = l; //set to l
             this->positionRight = r; //set to r
             this->positionTop = t; //set to t
             this->positionBottom = b; //set to b
             this->callback = callback; //set to callback
+            this->tag = blue; //set to tag
         }
 
-        autons(string n, int l, int r, int t, int b, void (*callback)(), bool s) { //Alternative Contructor for starting Selected
+        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s) { //Alternative Contructor for starting Selected
             this->name = n; //Set name to n
             this->positionLeft = l; //set to l
             this->positionRight = r; //set to r
             this->positionTop = t; //set to t
             this->positionBottom = b; //set to b
             this->callback = callback; //set to callback
+            this->tag = blue; //set to tag
             this->Selected = s; //set to Selected
+        }
+
+        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s, bool skills) { //Alternative Contructor for starting Selected
+            this->name = n; //Set name to n
+            this->positionLeft = l; //set to l
+            this->positionRight = r; //set to r
+            this->positionTop = t; //set to t
+            this->positionBottom = b; //set to b
+            this->callback = callback; //set to callback
+            this->tag = blue; //set to tag
+            this->Selected = s; //set to Selected
+            this->skills = skills; //set to skills
         }
 
         bool containsPoint(int x, int y) const { //Run when brain clicked
@@ -74,7 +89,7 @@ class autons{ //Autons class
         void drawBox() const { //Call when drawing box after making background
             pros::screen::set_pen(color); //Yellow
             pros::screen::fill_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
-            pros::screen::set_pen(0x0000FF); //Blue
+            pros::screen::set_pen(textColor); //Blue
             pros::screen::print(pros::E_TEXT_MEDIUM, (positionLeft + 8), ((positionTop + positionBottom)/2), name.c_str());
         }
     
@@ -86,6 +101,14 @@ class autons{ //Autons class
             return callback;
         }
 
+        bool isBlue() const { //Read-only to check if blue auton
+            return tag;
+        }
+
+        bool isSkills() const {
+            return skills;
+        }
+
     private: //Hidden from user. Public is what is accessed
 
         string name; //Name of auton
@@ -94,8 +117,52 @@ class autons{ //Autons class
         int positionBottom; //Bottom position
         int positionTop; //Top position
         void (*callback)(); //Callback to the function
+        bool tag; //Tag for checking if it is blue
+        bool skills = false; //Is skills. Defaults to false unless constructed otherwise
 
         bool Selected = false; //Selected tracker | Starts false
+};
+
+class colorManager { //Class to manage toggle color
+    public:
+
+        colorManager(int l, int r, int t, int b) { //Constructor. left, right, top, and bottom bounds
+            this->positionLeft = l;
+            this->positionRight = r;
+            this->positionTop = t;
+            this->positionBottom = b;
+        }
+
+        bool checkPressed(int x, int y) {
+            return ((x >= positionLeft&&x <= positionRight)&&
+                    (y <= positionBottom&&y >= positionTop)); //Returns if all are true
+        }
+
+        void toggle() { //Toggles color | Starts blue |  Blue is true
+            this->blue = !blue;
+        }
+
+        bool isBlue() { //Checks if blue
+            return blue;
+        }
+
+        void draw() {
+            string name = blue ? "Blue" : "Red";
+            pros::screen::set_pen(0xFFFFFF); //Always White (Stick out)
+            pros::screen::fill_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
+            pros::screen::set_pen(blue ? 0x0000FF : 0xFF0000); //if blue make blue
+            pros::screen::print(pros::E_TEXT_MEDIUM, (positionLeft + 8), ((positionTop + positionBottom)/2), name.c_str());
+        }
+
+    private:
+    
+        bool blue = true; //When true set textColor to blue (0x0000FF)
+                          //Else set to red (0xFF0000)
+        int positionLeft; //Left edge of manager
+        int positionRight; //Right edge
+        int positionBottom; //Bottom edge
+        int positionTop; //Top edge
+
 };
 
 class AutonManager{ //This class handles the autons. Make 1
@@ -104,15 +171,46 @@ class AutonManager{ //This class handles the autons. Make 1
     void add(autons a) {list.push_back(a);} //Adds all of input a
     //Call this to add new autons
 
+    void addColorManager(colorManager c) {cMNG.push_back(c);} //Adds in Color Manager
+
     void screenTouched(int x, int y) {
+
+        /*
+         * Issue:
+         * This runs multiple times per press
+         * That's not good, so, I need to:
+         * Learn how atomics work
+         * And find more solutions
+         * Cause it's not the best rn
+        */
+
         for (auto &a : list) { //For every item in list (called a)
             a.setSelected(a.containsPoint(x, y)); //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
 
+        if (cMNG[0].checkPressed(x, y)) { //Checks if manager was pressed
+            cMNG[0].toggle(); //Switch Color on press
+        }
+
+        textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
+
+        ++iterations;
+        string newName = to_string(iterations);
+        pros::screen::print(pros::E_TEXT_LARGE, 2, 120, newName.c_str());
+
         for (const auto &a : list) { //Redraw after finding new selected
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
-            a.drawBox(); //Draw every auton onto the screen
+            if (a.isSkills()) {
+                a.drawBox(); //Draws if skills regardless of color
+            } else { //If not skills then check color
+                cMNG[0].isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; /*
+                *Only draw if correct color
+                *(, 1) and : 1 are added so both sides are int
+                *And I don't have to add something to the false branch*/
+            }
+            pros::delay(8); //Delay so brain can catch up
         } //Update visually. No need for background redraw, the boxes stay in place
+        cMNG[0].draw(); //Draws color manager (Once)
     } 
 
     string selectedAuton() { //Return the string name of the selected
@@ -137,10 +235,17 @@ class AutonManager{ //This class handles the autons. Make 1
         pros::delay(10); //Tiny Delay so brain screen can catch up
         //If it moves on before refresh rate can catch up it doesn't save autons
 
+        textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
+
         for (const auto &a : list) {
             color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
-            a.drawBox(); //Draw every auton onto the screen
+            if (a.isSkills()) {
+                a.drawBox(); //Draws if skills regardless of color
+            } else { //If not skills then check color
+                cMNG[0].isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; //Draws auton if correct
+            }
         }
+        cMNG[0].draw(); //Draws color manager (Once)
     }
 
     void store() {
@@ -154,6 +259,7 @@ class AutonManager{ //This class handles the autons. Make 1
     void terminateAutons() { //Run after storing
         terminated = true; //Sets to true
         list.clear(); //Clear the list that contains autons
+        cMNG.clear(); //Clears storage so it doesn't reprint
         //Removes them from being able to be touched
         //No need to deconstruct them. They're fine how they are
         printAutons(); //Rerun. Should remove all boxes because none are left
@@ -168,6 +274,8 @@ class AutonManager{ //This class handles the autons. Make 1
     bool terminated = false; //False by default | Helper to check if already terminated
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
+    vector<colorManager> cMNG;
+    int iterations = 0;
 };
 
 //autons should not be used to interact with them besides creation
