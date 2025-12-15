@@ -1,5 +1,5 @@
 #include "main.h"
-#include "menu.h"
+#include "menu.hpp"
 
 //Initialize and create the auton manager
 AutonManager Kerry; //Creates the manager, named Kerry
@@ -28,21 +28,34 @@ ez::tracking_wheel horiz_tracker(-8, 2.75, 2);  // This tracking wheel is perpen
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true;
-std::atomic<bool> secondLock{false};
+std::atomic<bool> secondLock{false}; //An atomic because of multi-threading
+//So no data races occur. And the selector updates once per
+
+/*
+ * Current Issue:
+ * 
+ * The controller screen is not printing
+ * And it isn't rumbling when I want it to
+ * Ask Lucas for help since I've tried a lot of things
+ * Something to do with EZ Template blocking it
+ * I want to fix:
+ * Printing auton to controller screen and rumbling for selector
+ * Rumbling and printing to screen for drive style switch
+*/
 
 void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
-  if (!secondLock.exchange(true)) {
+  if (!secondLock.exchange(true)) { //If prior status was false, run (Not activated then activate).
     pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
     Kerry.screenTouched(status.x, status.y);
-    master.clear_line(3);
-    master.print(3, 1, Kerry.selectedAuton().c_str()); //Prints current auton selected to screen
-    master.rumble("..");
+    master.clear_line(2);
+    master.set_text(2, 0, Kerry.selectedAuton());
+    master.rumble(".");
     Kerry.store(); //Stores selected
-  }
+  } //Only runs once until screen is released
 }
 
 void screenReleased() {
-  secondLock.store(false);
+  secondLock.store(false); //Sets to false (safely across multiple activations)
 }
 
 int autonSelector() { //This is what runs the callbacks
@@ -123,7 +136,7 @@ void initialize() {
   //Red
 
   //First Row
-  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideR, false, true)); //Each gets
+  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideR, false));       //Each gets
   autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideR, false));    //added to the vector
   autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWPR, false));           //with all the qualities
   autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPR, false));          //So later the vector

@@ -1,4 +1,4 @@
-#include "menu.h"
+#include "menu.hpp"
 
 lv_obj_t* image;
 
