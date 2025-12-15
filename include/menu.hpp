@@ -175,13 +175,14 @@ class AutonManager{ //This class handles the autons. Make 1
 
     void screenTouched(int x, int y) {
 
-        for (auto &a : list) { //For every item in list (called a)
-            a.setSelected(a.containsPoint(x, y)); //Runs this function. This updates every auton to only select the last touched
-        } //Sets selected if it contains that point
-
         if (cMNG[0].checkPressed(x, y)) { //Checks if manager was pressed
             cMNG[0].toggle(); //Switch Color on press
-        }
+        } //Checks first so only right color autons can be selected
+
+        for (auto &a : list) { //For every item in list (called a)
+            a.isBlue() == cMNG[0].isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
+            //Runs this function. This updates every auton to only select the last touched
+        } //Sets selected if it contains that point
 
         textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
 
