@@ -32,7 +32,7 @@ std::atomic<bool> secondLock{false}; //An atomic because of multi-threading
 //So no data races occur. And the selector updates once per
 
 void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
-  if (!secondLock.exchange(true)) { //If prior status was false, run (Not activated then activate).
+  if (!secondLock.exchange(true)&&!Kerry.hasTerminated()) { //If prior status was false, run (Not activated then activate).
     pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
     Kerry.screenTouched(status.x, status.y); //Runs the screen check for everything
     master.print(0, 0, "AS: %-20s", Kerry.selectedAuton()); //Print selected Auton to controller
