@@ -180,7 +180,11 @@ class AutonManager{ //This class handles the autons. Make 1
         } //Checks first so only right color autons can be selected
 
         for (auto &a : list) { //For every item in list (called a)
-            a.isBlue() == cMNG[0].isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
+            if (a.isSkills()) { //Checks if skills. Ignores color difference
+                a.setSelected(a.containsPoint(x, y));
+            } else {
+                a.isBlue() == cMNG[0].isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
+            } //Checks if correct color
             //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
 

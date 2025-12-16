@@ -31,25 +31,11 @@ bool selectorEnable = true;
 std::atomic<bool> secondLock{false}; //An atomic because of multi-threading
 //So no data races occur. And the selector updates once per
 
-/*
- * Current Issue:
- * 
- * The controller screen is not printing
- * And it isn't rumbling when I want it to
- * Ask Lucas for help since I've tried a lot of things
- * Something to do with EZ Template blocking it
- * I want to fix:
- * Printing auton to controller screen and rumbling for selector
- * Rumbling and printing to screen for drive style switch
-*/
-
 void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
   if (!secondLock.exchange(true)) { //If prior status was false, run (Not activated then activate).
     pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
-    Kerry.screenTouched(status.x, status.y);
-    master.clear_line(2);
-    master.set_text(2, 0, Kerry.selectedAuton());
-    master.rumble(".");
+    Kerry.screenTouched(status.x, status.y); //Runs the screen check for everything
+    master.rumble("."); //Rumbles every brain press. So we know when autons might change
     Kerry.store(); //Stores selected
   } //Only runs once until screen is released
 }
@@ -328,6 +314,13 @@ void ez_template_extras() {
   }
 }
 
+bool driveStyleSwitch = false; //false is arcade, true is tank
+
+void driveSwitch() {
+  driveStyleSwitch = !driveStyleSwitch;
+  master.rumble(".");  // Rumble to let the user know the switch happened
+}
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -344,7 +337,6 @@ void ez_template_extras() {
 void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
-  bool driveStyleSwitch = false; //false is arcade, true is tank
 
   //chassis.opcontrol_joystick_practicemode_toggle(true); //Comment or remove at comps
 
@@ -378,14 +370,7 @@ void opcontrol() {
     } else intakeUpper.move(0);
 
     if (master.get_digital_new_press(DIGITAL_B)) {
-      driveStyleSwitch = !driveStyleSwitch;
-      master.rumble(".");  // Rumble to let the user know the switch happened
-      master.clear_line(2); //Clear bottom line
-      if (driveStyleSwitch) { //Print current drive style
-        master.print(2, 1, "Tank Drive");
-      } else {
-        master.print(2, 1, "Arcade Drive");
-      }
+      driveSwitch();
     }
 
     //New press is every click
