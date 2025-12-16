@@ -27,7 +27,7 @@ ez::Drive chassis(
 ez::tracking_wheel horiz_tracker(-8, 2.75, 2);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
-bool selectorEnable = true;
+bool selectorEnable = true; //The boolean to enable/disable the selector task
 std::atomic<bool> secondLock{false}; //An atomic because of multi-threading
 //So no data races occur. And the selector updates once per
 
@@ -35,6 +35,8 @@ void screenTouch() { //Function to check where screen is pressed and then feed t
   if (!secondLock.exchange(true)) { //If prior status was false, run (Not activated then activate).
     pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
     Kerry.screenTouched(status.x, status.y); //Runs the screen check for everything
+    master.print(0, 0, "AS: %-20s", Kerry.selectedAuton()); //Print selected Auton to controller
+    pros::delay(50); //Delay so rumble can que
     master.rumble("."); //Rumbles every brain press. So we know when autons might change
     Kerry.store(); //Stores selected
   } //Only runs once until screen is released
@@ -45,6 +47,7 @@ void screenReleased() {
 }
 
 int autonSelector() { //This is what runs the callbacks
+  master.print(0, 0, "AS: %-20s", Kerry.selectedAuton()); //When started give starting auton
   while (selectorEnable) {
     pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
     pros::screen::touch_callback(screenReleased, TOUCH_RELEASED); //Resets for next activation
@@ -318,6 +321,8 @@ bool driveStyleSwitch = false; //false is arcade, true is tank
 
 void driveSwitch() {
   driveStyleSwitch = !driveStyleSwitch;
+  master.print(0, 0, "%-20s", driveStyleSwitch ? "Tank Drive" : "Arcade Drive");
+  pros::delay(50);
   master.rumble(".");  // Rumble to let the user know the switch happened
 }
 

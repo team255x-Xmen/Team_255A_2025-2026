@@ -209,9 +209,16 @@ class AutonManager{ //This class handles the autons. Make 1
         for (auto &a : list) {
             if (a.isSelected()) {
                 b = a.nameIs();
+                if (a.isSkills()) {
+                    return b; //If skills end before adding color tag
+                }
             }
         }
-        return b;
+        if (b == "") { //If no auton selected
+            return cMNG[0].isBlue() ? "Blue" : "Red"; //State full color with no extra spaces
+        } //Otherwise returns full name
+        //Will always default to this one (outside of any conditionals for this purpose)
+        return b + (cMNG[0].isBlue() ? " B" : " R"); //Adds color tag onto the name
     }
     
     void runSelectedAuton() { //Run the auton
