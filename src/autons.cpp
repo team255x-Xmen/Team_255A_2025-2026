@@ -177,7 +177,7 @@ void RightDuoAWPR() { //Only use for setting odom xyt
 
 
 void skillsAuton() { // I want to eventually be using odom for this
-  chassis.odom_xyt_set(-47.536_in, 9.337_in, -45_deg); //Starting position
+  chassis.odom_xyt_set(-47.536_in, 9.337_in, 45_deg); //Starting position
 
   //Movement to first set
   chassis.pid_odom_set({{{-44.383_in, 17.826_in}, fwd, DRIVE_SPEED},

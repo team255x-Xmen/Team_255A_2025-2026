@@ -28,7 +28,7 @@
 #ifndef MENU_H //If not already made and defined
 #define MENU_H //Start of definition
 
-using namespace std; //So any logs and standard library doesn't need namespace defintiion
+using namespace std; //So any logs and standard library don't need namespace defintiion
 
 extern void drawImage();
 
@@ -59,7 +59,7 @@ class autons{ //Autons class
             this->Selected = s; //set to Selected
         }
 
-        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s, bool skills) { //Alternative Contructor for starting Selected
+        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s, bool skills) { //Alternative Contructor for selected & skills
             this->name = n; //Set name to n
             this->positionLeft = l; //set to l
             this->positionRight = r; //set to r
@@ -165,6 +165,8 @@ class colorManager { //Class to manage toggle color
 
 };
 
+extern bool selectedIsBlue;
+
 class AutonManager{ //This class handles the autons. Make 1
     public:
 
@@ -246,10 +248,11 @@ class AutonManager{ //This class handles the autons. Make 1
         cMNG[0].draw(); //Draws color manager (Once)
     }
 
-    void store() {
+    void store() { //Stores selected auton's callback for after termination
         for (auto &a : list) { //Stores the current callback for selected function
             if (a.isSelected()) {
                 storedCallback = a.callbackIs();
+                selectedIsBlue = a.isBlue(); //Updates the seleted color with selected auton
             }
         }
     }

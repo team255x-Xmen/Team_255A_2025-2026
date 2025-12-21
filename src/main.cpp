@@ -1,5 +1,6 @@
 #include "main.h"
 #include "menu.hpp"
+#include "driver-motions.hpp"
 
 //Initialize and create the auton manager
 AutonManager Kerry; //Creates the manager, named Kerry
@@ -162,6 +163,7 @@ void initialize() {
   Kerry.printAutons(); //Set up screen after adding autons. Initializes
   pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
+  //At some point add in a color sorter and run the task here (so it runs globally)
 }
 
 /**
@@ -376,6 +378,18 @@ void opcontrol() {
 
     if (master.get_digital_new_press(DIGITAL_B)) {
       driveSwitch();
+    }
+
+    if (master.get_digital_new_press(DIGITAL_A)) {
+      odomScore(); //Run score task
+    }
+
+    if (master.get_digital_new_press(DIGITAL_Y)) {
+      odomMatchLoad(); //Run match load setup
+    }
+
+    if (master.get_digital_new_press(DIGITAL_X)) {
+      odomMatchLoadScore(); //Runs big big driver motion
     }
 
     //New press is every click
