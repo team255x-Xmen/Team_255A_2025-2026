@@ -13,6 +13,6 @@
 
 void odomScore();
 void odomMatchLoad();
-void odomMatchLoadScore();
+void odomCloseScore();
 
 #endif DRIVER-MOTIONS_HPP

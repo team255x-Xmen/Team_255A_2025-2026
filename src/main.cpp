@@ -389,7 +389,7 @@ void opcontrol() {
     }
 
     if (master.get_digital_new_press(DIGITAL_X)) {
-      odomMatchLoadScore(); //Runs big big driver motion
+      odomCloseScore(); //Moves to scoring pos (when close to goal already)
     }
 
     //New press is every click
