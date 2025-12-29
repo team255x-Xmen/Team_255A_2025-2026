@@ -57,22 +57,114 @@ void default_constants() {
 //Wait quick is better, but overshoot is same amount of time.
 
 void simpleLeft() { //Put full left side code here
-
+  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(-31_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  intakeLower.move(127);
+  intakeUpper.move(127);
+  lockPiston.set(true);
+  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_wait_until(4_in);
+  matchLoadPistons.set(true);
+  chassis.pid_wait_quick();
+  pros::delay(500);
+  chassis.pid_turn_relative_set(-94_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(26.5_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(-55_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(-12_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
 }
 
 
 void simpleRight() { //Put full code here
-
+  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  intakeLower.move(127);
+  intakeUpper.move(127);
+  lockPiston.set(true);
+  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_wait_until(4_in);
+  matchLoadPistons.set(true);
+  chassis.pid_wait_quick();
+  pros::delay(500);
+  chassis.pid_turn_relative_set(94_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(55_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(-12_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
 }
 
 
 void leftDuo() { //Full code
-
+  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(-31_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  intakeLower.move(127);
+  intakeUpper.move(127);
+  lockPiston.set(true);
+  chassis.pid_drive_set(12_in, 55, false);
+  chassis.pid_wait_until(4_in);
+  matchLoadPistons.set(true);
+  chassis.pid_wait_quick();
+  pros::delay(500);
+  chassis.pid_turn_relative_set(-100_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(-14.5_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
+  pros::delay(2000);
+  chassis.pid_drive_set(42_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(-51_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(11_in, DRIVE_SPEED, false);
+  pros::delay(1700);
+  chassis.pid_drive_set(-25_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
 }
 
 
 void rightDuo() { //I think you get the drill at this point
-
+  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  intakeLower.move(127);
+  intakeUpper.move(127);
+  lockPiston.set(true);
+  chassis.pid_drive_set(12_in, 55, false);
+  chassis.pid_wait_until(4_in);
+  matchLoadPistons.set(true);
+  chassis.pid_wait_quick();
+  pros::delay(500);
+  chassis.pid_turn_relative_set(100_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(-14.5_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
+  pros::delay(2000);
+  chassis.pid_drive_set(42_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_relative_set(51_deg, TURN_SPEED, true);
+  chassis.pid_wait_quick();
+  chassis.pid_drive_set(11_in, DRIVE_SPEED, false);
+  pros::delay(1700);
+  chassis.pid_drive_set(-25_in, DRIVE_SPEED, true);
+  chassis.pid_wait_quick();
+  lockPiston.set(false);
 }
 
 
@@ -86,12 +178,24 @@ void rightSolo() { //Last one!
 }
 
 
+void leftB() { //Left blue coordinate setter
+  chassis.odom_xyt_set(62.75_in, -16.75_in, -90_deg);
+}
 
+void leftR() { //Left red coordinate setter
+  chassis.odom_xyt_set(-62.75_in, 16.75_in, 90_deg);
+}
 
+void rightB() { //Right blue coordinate setter
+  chassis.odom_xyt_set(62.75_in, 16.75_in, -90_deg);
+}
 
+void rightR() { //Right red coordinate setter
+  chassis.odom_xyt_set(-62.75_in, -16.75_in, 90_deg);
+}
 
 void simpleLeftSideB() { //Only use for setting odom xyt
-  
+  leftB();
   simpleLeft(); //Runs the actual (both sides can run the same)
   //As long as no odom is used
   //This is just for coordinate setting
@@ -100,77 +204,77 @@ void simpleLeftSideB() { //Only use for setting odom xyt
 
 
 void simpleLeftSideR() { //Only use for setting odom xyt
-
+  leftR();
   simpleLeft();
 }
 
 
 
 void simpleRightSideB() { //Only use for setting odom xyt
-  
+  rightB();
   simpleRight();
 }
 
 
 
 void simpleRightSideR() { //Only use for setting odom xyt
-  
+  rightR();
   simpleRight();
 }
 
 
 
 void LeftSoloAWPB() { //Only use for setting odom xyt
-
+  leftB();
   leftSolo();
 }
 
 
 
 void LeftSoloAWPR() { //Only use for setting odom xyt
-
+  leftR();
   leftSolo();
 }
 
 
 
 void RightSoloAWPB() { //Only use for setting odom xyt
-
+  rightB();
   rightSolo();
 }
 
 
 
 void RightSoloAWPR() { //Only use for setting odom xyt
-
+  rightR();
   rightSolo();
 }
 
 
 
 void LeftDuoAWPB() { //Only use for setting odom xyt
-  
+  leftB();
   leftDuo();
 }
 
 
 
 void LeftDuoAWPR() { //Only use for setting odom xyt
-  
+  leftR();
   leftDuo();
 }
 
 
 
 void RightDuoAWPB() { //Only use for setting odom xyt
-  
+  rightB();
   rightDuo();
 }
 
 
 
 void RightDuoAWPR() { //Only use for setting odom xyt
-  
+  rightR();
   rightDuo();
 }
 

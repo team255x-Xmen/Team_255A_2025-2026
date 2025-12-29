@@ -15,5 +15,5 @@ extern Drive chassis;
 inline pros::Motor intakeLower(-11);
 inline pros::Motor intakeUpper(-12);
 inline ez::Piston matchLoadPistons('A', false);
-inline ez::Piston UnknownPiston('B', false);
+inline ez::Piston lockPiston('B', false);
 //Placeholder for the piston once we know what it does

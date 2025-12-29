@@ -18,14 +18,14 @@ ez::Drive chassis(
 
     9,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    320);   // Wheel RPM = cartridge * (motor gear / wheel gear)
+    360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
 // Uncomment the trackers you're using here!
 // - `8` and `9` are smart ports (making these negative will reverse the sensor)
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(-8, 2.75, 2);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(8, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true; //The boolean to enable/disable the selector task
@@ -120,8 +120,8 @@ void initialize() {
   autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPB, true));          //So later the vector
 
   //Second Row
-  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWPB, true));    //Can just be run through
-  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWPB, true)); //And reduce lines
+  autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPB, true));    //Can just be run through
+  autonPrograms.push_back(autons("R 2 Goal", 124, 236, 124, 236, RightDuoAWPB, true)); //And reduce lines
 
   //Red
 
@@ -132,8 +132,8 @@ void initialize() {
   autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPR, false));          //So later the vector
 
   //Second Row
-  autonPrograms.push_back(autons("L 7 Ball", 4, 116, 124, 236, LeftDuoAWPR, false));    //Can just be run through
-  autonPrograms.push_back(autons("R 7 Ball", 124, 236, 124, 236, RightDuoAWPR, false)); //And reduce lines
+  autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPR, false));    //Can just be run through
+  autonPrograms.push_back(autons("R 2 Goal", 124, 236, 124, 236, RightDuoAWPR, false)); //And reduce lines
 
   //Skills
   autonPrograms.push_back(autons("Skills", 244, 356, 124, 236, skillsAuton, true, false, true)); //And stop me from forgetting stuff
@@ -322,11 +322,20 @@ void ez_template_extras() {
 bool driveStyleSwitch = false; //false is arcade, true is tank
 
 void driveSwitch() {
-  driveStyleSwitch = !driveStyleSwitch;
-  master.print(0, 0, "%-20s", driveStyleSwitch ? "Tank Drive" : "Arcade Drive");
-  pros::delay(50);
+  driveStyleSwitch = !driveStyleSwitch; //Switches boolean
+  master.print(0, 0, "%-20s", driveStyleSwitch ? "Tank Drive" : "Arcade Drive"); //Prints new style
+  pros::delay(50); //Waits so rumble can que
   master.rumble(".");  // Rumble to let the user know the switch happened
 }
+
+void displayOdom() { //Displays the current odometry information. For debugging
+  pros::screen::set_pen(0x0000FF); //Sets color to blue
+  pros::screen::fill_rect(0, 0, 480, 240); //Draws a rectangle (entire screen)
+  pros::screen::set_pen(0xFFFFFF); //Sets color to white
+  pros::screen::print(pros::E_TEXT_MEDIUM, 0, 20, "X: %f", chassis.odom_x_get()); //Prints the x pos
+  pros::screen::print(pros::E_TEXT_MEDIUM, 0, 50, "Y: %f", chassis.odom_y_get()); //Prints the y pos
+  pros::screen::print(pros::E_TEXT_MEDIUM, 0, 80, "T: %f", chassis.odom_theta_get()); //Prints the angle
+} //Covers up custom background, so it can only be activated in opcontrol when not connected to comp controller
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -390,6 +399,10 @@ void opcontrol() {
 
     if (master.get_digital_new_press(DIGITAL_X)) {
       odomCloseScore(); //Moves to scoring pos (when close to goal already)
+    }
+
+    if (!pros::competition::is_connected()&&master.get_digital_new_press(DIGITAL_UP)) { //Only if not connected, then when button pressed
+      displayOdom();
     }
 
     //New press is every click
