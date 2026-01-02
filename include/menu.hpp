@@ -226,6 +226,8 @@ class AutonManager{ //This class handles the autons. Make 1
     void runSelectedAuton() { //Run the auton
         if (storedCallback) { //Checks if initialized
             storedCallback(); //Runs callback
+        } else {
+            basicDrive(); //Runs backup if nothing was selected
         }
     }
 

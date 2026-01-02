@@ -22,3 +22,6 @@ void RightDuoAWPR();
 
 //Skills
 void skillsAuton();
+
+//Backup (if nothing selected)
+void basicDrive();

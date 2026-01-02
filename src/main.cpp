@@ -329,13 +329,33 @@ void driveSwitch() {
 }
 
 void displayOdom() { //Displays the current odometry information. For debugging
-  pros::screen::set_pen(0x0000FF); //Sets color to blue
-  pros::screen::fill_rect(0, 0, 480, 240); //Draws a rectangle (entire screen)
   pros::screen::set_pen(0xFFFFFF); //Sets color to white
   pros::screen::print(pros::E_TEXT_MEDIUM, 0, 20, "X: %f", chassis.odom_x_get()); //Prints the x pos
   pros::screen::print(pros::E_TEXT_MEDIUM, 0, 50, "Y: %f", chassis.odom_y_get()); //Prints the y pos
   pros::screen::print(pros::E_TEXT_MEDIUM, 0, 80, "T: %f", chassis.odom_theta_get()); //Prints the angle
 } //Covers up custom background, so it can only be activated in opcontrol when not connected to comp controller
+
+char calcQuad() {
+  char quad = 0; //Char for quadrant
+  double robotX = chassis.odom_x_get(); //Sets to simpler name
+  double robotY = chassis.odom_y_get(); //Sets to simpler name
+
+  if (robotX <= 0 && robotY <= 0) quad = 3; //Bottom Left
+  if (robotX <= 0 && robotY > 0) quad = 2; //Top Left
+  if (robotX > 0 && robotY <= 0) quad = 4; //Bottom Right
+  if (robotX > 0 && robotY > 0) quad = 1; //Top Right
+
+  return quad; //Returns the calculated quadrant
+}
+
+void debugScreen() {
+  pros::screen::set_pen(0x0000FF); //Sets color to blue
+  pros::screen::fill_rect(0, 0, 480, 240); //Draws a rectangle (entire screen)
+  displayOdom(); //Displays current odom
+  pros::screen::set_pen(0xFFFFFF); //Sets pen to white
+  pros::screen::print(pros::E_TEXT_MEDIUM, 100, 30, "Quadrant: %c", calcQuad()); //Prints quadrant
+  //More room to add to the debug screen as I think of it!
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -402,7 +422,7 @@ void opcontrol() {
     }
 
     if (!pros::competition::is_connected()&&master.get_digital_new_press(DIGITAL_UP)) { //Only if not connected, then when button pressed
-      displayOdom();
+      debugScreen();
     }
 
     //New press is every click
