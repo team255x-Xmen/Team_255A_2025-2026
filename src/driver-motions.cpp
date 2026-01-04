@@ -25,8 +25,8 @@ void OdomMovement() { //Odom movement to quadrant's scoring tile line (y positio
             chassis.pid_turn_set({44_in, 34_in}, fwd, 80, true); //Turns to safe point
             chassis.pid_wait_quick();
             chassis.pid_odom_set({{{44_in, 34_in}, fwd, 110},
-                                  {{47_in, 42_in}, fwd, 110},
-                                  {{48_in, 48_in}, fwd, 110}}, true); //Moves to region safe from all angles
+                                  {{46_in, 42_in}, fwd, 110},
+                                  {{48_in, 48_in}, fwd, 55}}, true); //Moves to region safe from all angles
             chassis.pid_wait_quick();
             chassis.pid_turn_set(90_deg, 80, true); //Turns to scoring angle
             chassis.pid_wait_quick();
@@ -35,8 +35,8 @@ void OdomMovement() { //Odom movement to quadrant's scoring tile line (y positio
             chassis.pid_turn_set({-44_in, 34_in}, fwd, 80, true); //Turns to safe point
             chassis.pid_wait_quick();
             chassis.pid_odom_set({{{-44_in, 34_in}, fwd, 110},
-                                  {{-47_in, 42_in}, fwd, 110},
-                                  {{-48_in, 48_in}, fwd, 110}}, true); //Moves to region safe from all angles
+                                  {{-46_in, 42_in}, fwd, 110},
+                                  {{-48_in, 48_in}, fwd, 55}}, true); //Moves to region safe from all angles
             chassis.pid_wait_quick();
             chassis.pid_turn_set(-90_deg, 80, true); //Turns to scoring angle
             chassis.pid_wait_quick();
@@ -45,8 +45,8 @@ void OdomMovement() { //Odom movement to quadrant's scoring tile line (y positio
             chassis.pid_turn_set({-44_in, -34_in}, fwd, 80, true); //Turns to safe point
             chassis.pid_wait_quick();
             chassis.pid_odom_set({{{-44_in, -34_in}, fwd, 110},
-                                  {{-47_in, -42_in}, fwd, 110},
-                                  {{-48_in, -48_in}, fwd, 110}}, true); //Moves to region safe from all angles
+                                  {{-46_in, -42_in}, fwd, 110},
+                                  {{-48_in, -48_in}, fwd, 55}}, true); //Moves to region safe from all angles
             chassis.pid_wait_quick();
             chassis.pid_wait_quick();
             chassis.pid_turn_set(-90_deg, 80, true); //Turns to scoring angle
@@ -56,8 +56,8 @@ void OdomMovement() { //Odom movement to quadrant's scoring tile line (y positio
             chassis.pid_turn_set({44_in, -34_in}, fwd, 80, true); //Turns to safe point
             chassis.pid_wait_quick();
             chassis.pid_odom_set({{{44_in, -34_in}, fwd, 110},
-                                  {{47_in, -42_in}, fwd, 110},
-                                  {{48_in, -48_in}, fwd, 110}}, true); //Moves to region safe from all angles
+                                  {{46_in, -42_in}, fwd, 110},
+                                  {{48_in, -48_in}, fwd, 55}}, true); //Moves to region safe from all angles
             chassis.pid_wait_quick();
             chassis.pid_wait_quick();
             chassis.pid_turn_set(90_deg, 80, true); //Turns to scoring angle

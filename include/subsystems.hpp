@@ -17,4 +17,3 @@ inline pros::Motor intakeUpper(-12);
 inline ez::Piston matchLoadPistons('A', false);
 inline ez::Piston lockPiston('B', false);
 inline ez::Piston descorePiston('C', false); //False is descore position
-//Placeholder for the piston once we know what it does

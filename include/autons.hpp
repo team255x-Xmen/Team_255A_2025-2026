@@ -7,18 +7,18 @@ void default_constants();
 //Blue
 void simpleLeftSideB();
 void simpleRightSideB();
-void LeftSoloAWPB();
-void RightSoloAWPB();
 void LeftDuoAWPB();
 void RightDuoAWPB();
+void LeftDescoreB();
+void RightDescoreB();
 
 //Red
 void simpleLeftSideR();
 void simpleRightSideR();
-void LeftSoloAWPR();
-void RightSoloAWPR();
 void LeftDuoAWPR();
 void RightDuoAWPR();
+void LeftDescoreR();
+void RightDescoreR();
 
 //Skills
 void skillsAuton();

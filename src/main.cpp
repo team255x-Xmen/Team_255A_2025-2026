@@ -116,8 +116,8 @@ void initialize() {
   //First Row
   autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideB, true, true)); //Each gets
   autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideB, true));    //added to the vector
-  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWPB, true));           //with all the qualities
-  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPB, true));          //So later the vector
+  autonPrograms.push_back(autons("L Descore", 244, 356, 4, 116, LeftDescoreB, true));           //with all the qualities
+  autonPrograms.push_back(autons("R Descore", 364, 476, 4, 116, RightDescoreB, true));          //So later the vector
 
   //Second Row
   autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPB, true));    //Can just be run through
@@ -128,8 +128,8 @@ void initialize() {
   //First Row
   autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideR, false));       //Each gets
   autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideR, false));    //added to the vector
-  autonPrograms.push_back(autons("L AWP", 244, 356, 4, 116, LeftSoloAWPR, false));           //with all the qualities
-  autonPrograms.push_back(autons("R AWP", 364, 476, 4, 116, RightSoloAWPR, false));          //So later the vector
+  autonPrograms.push_back(autons("L Descore", 244, 356, 4, 116, LeftDescoreR, false));           //with all the qualities
+  autonPrograms.push_back(autons("R Descore", 364, 476, 4, 116, RightDescoreR, false));          //So later the vector
 
   //Second Row
   autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPR, false));    //Can just be run through
@@ -335,8 +335,8 @@ void displayOdom() { //Displays the current odometry information. For debugging
   pros::screen::print(pros::E_TEXT_MEDIUM, 0, 80, "T: %f", chassis.odom_theta_get()); //Prints the angle
 } //Covers up custom background, so it can only be activated in opcontrol when not connected to comp controller
 
-char calcQuad() {
-  char quad = 0; //Char for quadrant
+int calculateQuad() {
+  int quad = 0; //Char for quadrant
   double robotX = chassis.odom_x_get(); //Sets to simpler name
   double robotY = chassis.odom_y_get(); //Sets to simpler name
 
@@ -348,12 +348,19 @@ char calcQuad() {
   return quad; //Returns the calculated quadrant
 }
 
+void motorTemp() {
+  pros::screen::set_pen(0xFFFFFF);
+  pros::screen::print(pros::E_TEXT_MEDIUM, 150, 80, "Lower Temp: %f", intakeLower.get_temperature());
+  pros::screen::print(pros::E_TEXT_MEDIUM, 150, 100, "Upper Temp: %f", intakeUpper.get_temperature());
+}
+
 void debugScreen() {
   pros::screen::set_pen(0x0000FF); //Sets color to blue
   pros::screen::fill_rect(0, 0, 480, 240); //Draws a rectangle (entire screen)
   displayOdom(); //Displays current odom
   pros::screen::set_pen(0xFFFFFF); //Sets pen to white
-  pros::screen::print(pros::E_TEXT_MEDIUM, 100, 30, "Quadrant: %c", calcQuad()); //Prints quadrant
+  pros::screen::print(pros::E_TEXT_MEDIUM, 150, 30, "Quadrant: %i", calculateQuad()); //Prints quadrant
+  motorTemp();
   //More room to add to the debug screen as I think of it!
 }
 
@@ -421,7 +428,15 @@ void opcontrol() {
       odomCloseScore(); //Moves to scoring pos (when close to goal already)
     }
 
-    if (!pros::competition::is_connected()&&master.get_digital_new_press(DIGITAL_UP)) { //Only if not connected, then when button pressed
+    if (master.get_digital_new_press(DIGITAL_UP)) {
+      lockPiston.set(!lockPiston.get());
+    }
+
+    if (master.get_digital_new_press(DIGITAL_RIGHT)) {
+      descorePiston.set(!descorePiston.get());
+    }
+
+    if (!pros::competition::is_connected()&&master.get_digital_new_press(DIGITAL_LEFT)) { //Only if not connected, then when button pressed
       debugScreen();
     }
 
