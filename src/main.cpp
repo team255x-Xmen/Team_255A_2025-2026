@@ -14,7 +14,7 @@ AutonManager Kerry; //Creates the manager, named Kerry
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
-    {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
+    {4, -13, 7},  // Right Chassis Ports (negative port will reverse it!)
 
     9,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -364,6 +364,38 @@ void debugScreen() {
   //More room to add to the debug screen as I think of it!
 }
 
+bool intakeGroup = false;
+
+void intakeGroupToggle() {
+  intakeGroup = !intakeGroup;
+  master.print(0, 0, "%-28s", intakeGroup ? "Intakes Grouped" : "Intakes Disjoint"); //Prints new style
+  pros::delay(50); //Waits so rumble can que
+  master.rumble(".");  // Rumble to let the user know the switch happened
+}
+
+int calcIntakeSpeed(bool lower) {
+  int speed = 0;
+
+  if (!intakeGroup) {
+    if (master.get_digital(DIGITAL_R1)&&lower) {
+      lower ? speed = 127 : 1;
+    } else if (master.get_digital(DIGITAL_R2)&&lower) {
+      lower ? speed = -127 : 1;
+    } else if (master.get_digital(DIGITAL_L1)) {
+      lower ? 1 : speed = 127;
+    } else if (master.get_digital(DIGITAL_L2)) {
+      lower ? 1 : speed = -127;
+    }
+  } else {
+    if (master.get_digital(DIGITAL_R1)) speed = 127;
+    if (master.get_digital(DIGITAL_R2)) speed = -127;
+    if (master.get_digital(DIGITAL_L1)) speed = 127;
+    if (master.get_digital(DIGITAL_L2)) speed = -127;
+  }
+
+  return speed;
+}
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -400,17 +432,12 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
 
-    if (master.get_digital(DIGITAL_R1)) { //Lower Intake
-      intakeLower.move(127);
-    } else if (master.get_digital(DIGITAL_R2)) {
-      intakeLower.move(-127);
-    } else intakeLower.move(0);
-    
-    if (master.get_digital(DIGITAL_L1)) { //Upper Intake
-      intakeUpper.move(127);
-    } else if (master.get_digital(DIGITAL_L2)) {
-      intakeUpper.move(-127);
-    } else intakeUpper.move(0);
+    if (master.get_digital_new_press(DIGITAL_LEFT)) {
+      intakeGroupToggle();
+      if (!pros::competition::is_connected()) {
+        debugScreen();
+      }
+    }
 
     if (master.get_digital_new_press(DIGITAL_B)) {
       driveSwitch();
@@ -436,16 +463,14 @@ void opcontrol() {
       descorePiston.set(!descorePiston.get());
     }
 
-    if (!pros::competition::is_connected()&&master.get_digital_new_press(DIGITAL_LEFT)) { //Only if not connected, then when button pressed
-      debugScreen();
-    }
-
     //New press is every click
 
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
     }
 
+    intakeLower.move(calcIntakeSpeed(true));
+    intakeUpper.move(calcIntakeSpeed(false));
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }

@@ -224,7 +224,7 @@ class AutonManager{ //This class handles the autons. Make 1
     }
     
     void runSelectedAuton() { //Run the auton
-        if (storedCallback) { //Checks if initialized
+        if (storedCallback&&autonWasSelected) { //Checks if initialized
             storedCallback(); //Runs callback
         } else {
             basicDrive(); //Runs backup if nothing was selected
@@ -251,11 +251,19 @@ class AutonManager{ //This class handles the autons. Make 1
     }
 
     void store() { //Stores selected auton's callback for after termination
+        bool wasSelected = false;
         for (auto &a : list) { //Stores the current callback for selected function
             if (a.isSelected()) {
                 storedCallback = a.callbackIs();
                 selectedIsBlue = a.isBlue(); //Updates the seleted color with selected auton
+                wasSelected = true;
+                autonWasSelected = true;
             }
+        }
+
+        if (!wasSelected) {
+            storedCallback = nullptr; //Unintiializes if nothing was selected
+            autonWasSelected = false;
         }
     }
 
@@ -282,6 +290,7 @@ class AutonManager{ //This class handles the autons. Make 1
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
     vector<colorManager> cMNG;
+    bool autonWasSelected = false;
 };
 
 //autons should not be used to interact with them besides creation

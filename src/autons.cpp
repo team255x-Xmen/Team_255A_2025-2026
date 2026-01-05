@@ -110,7 +110,7 @@ void simpleLeft() { //Put full left side code here
   intakeLower.move(127);
   intakeUpper.move(127);
   lockPiston.set(true);
-  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_drive_set(14_in, 20, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -123,6 +123,7 @@ void simpleLeft() { //Put full left side code here
   chassis.pid_wait_quick();
   chassis.pid_drive_set(-14_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
+  pros::delay(300);
   lockPiston.set(false);
   chassis.pid_wait_until(2_in);
   chassis.pid_wait_quick();
@@ -138,7 +139,7 @@ void simpleRight() { //Put full code here
   intakeLower.move(127);
   intakeUpper.move(127);
   lockPiston.set(true);
-  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_drive_set(14_in, 20, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -152,6 +153,7 @@ void simpleRight() { //Put full code here
   chassis.pid_drive_set(-16_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
   lockPiston.set(false);
+  pros::delay(300);
   chassis.pid_wait_until(2_in);
   chassis.pid_wait_quick();
   intakeUpper.move(127);
