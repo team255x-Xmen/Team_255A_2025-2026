@@ -366,34 +366,50 @@ void debugScreen() {
 
 bool intakeGroup = false;
 
-void intakeGroupToggle() {
-  intakeGroup = !intakeGroup;
+void intakeGroupToggle() { //Toggles the intake grouping preference
+  intakeGroup = !intakeGroup; //Toggles the variable
   master.print(0, 0, "%-28s", intakeGroup ? "Intakes Grouped" : "Intakes Disjoint"); //Prints new style
   pros::delay(50); //Waits so rumble can que
   master.rumble(".");  // Rumble to let the user know the switch happened
 }
 
-int calcIntakeSpeed(bool lower) {
-  int speed = 0;
+/*
+ * A constant list (enum) that contains the speeds for the intake:
+ * -ZERO (0)
+ * -FWD (127, full)
+ * -REV (-127, full)
+*/
+enum class stdMotorSpeed {
+  ZERO = 0,
+  FWD = 127,
+  REV = -127
+};
 
-  if (!intakeGroup) {
-    if (master.get_digital(DIGITAL_R1)&&lower) {
-      lower ? speed = 127 : 1;
-    } else if (master.get_digital(DIGITAL_R2)&&lower) {
-      lower ? speed = -127 : 1;
-    } else if (master.get_digital(DIGITAL_L1)) {
-      lower ? 1 : speed = 127;
-    } else if (master.get_digital(DIGITAL_L2)) {
-      lower ? 1 : speed = -127;
+int calcIntakeSpeed(bool lower) { //Function that calculates intake speed based on controllers, preferences, and a bool
+  stdMotorSpeed speed = stdMotorSpeed::ZERO; //Zero by default. Called speed to set value to
+  bool R1 = master.get_digital(DIGITAL_R1); //Temporary boolean for R1 being pressed
+  bool R2 = master.get_digital(DIGITAL_R2); //Temporary boolean for R2 being pressed
+  bool L1 = master.get_digital(DIGITAL_L1); //Temporary boolean for L1 being pressed
+  bool L2 = master.get_digital(DIGITAL_L2); //Temporary boolean for L2 being pressed
+
+  if (!intakeGroup) { //If not grouped
+    if (R1&&lower) { //Then if trying to move lower intake (and is lower intake)
+      lower ? (speed = stdMotorSpeed::FWD, 1) : 1; //Set speed to full forward
+    } else if (R2&&lower) { //Same but for reverse
+      lower ? (speed = stdMotorSpeed::REV, 1) : 1; //Sets to reverse
+    } else if (L1) { //Checks if trying to move upper
+      lower ? 1 : (speed = stdMotorSpeed::FWD, 1); //Sets to full speed
+    } else if (L2) { //If trying to reverse
+      lower ? 1 : (speed = stdMotorSpeed::REV, 1); //Set to reverse
     }
-  } else {
-    if (master.get_digital(DIGITAL_R1)) speed = 127;
-    if (master.get_digital(DIGITAL_R2)) speed = -127;
-    if (master.get_digital(DIGITAL_L1)) speed = 127;
-    if (master.get_digital(DIGITAL_L2)) speed = -127;
+  } else { //When supposed to be grouped
+    if (R1) speed = stdMotorSpeed::FWD; //Sets to full forward
+    if (R2) speed = stdMotorSpeed::REV; //Sets to full reverse
+    if (L1) speed = stdMotorSpeed::FWD; //Same but for other side
+    if (L2) speed = stdMotorSpeed::REV; //Same but for other set of buttons
   }
 
-  return speed;
+  return static_cast<int>(speed); //Returns what speed is. It has to be converted to an integer so it returns properly (doesn't default)
 }
 
 /**
@@ -433,9 +449,9 @@ void opcontrol() {
     // . . .
 
     if (master.get_digital_new_press(DIGITAL_LEFT)) {
-      intakeGroupToggle();
-      if (!pros::competition::is_connected()) {
-        debugScreen();
+      intakeGroupToggle(); //Runs toggle
+      if (!pros::competition::is_connected()) { //Also checks if not connected
+        debugScreen(); //And then prints debug screen
       }
     }
 

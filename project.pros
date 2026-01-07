@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "SUGAR RUSH!!!!",
+    "project_name": "255A GVMS 1/11/26",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -424,8 +424,8 @@
       }
     },
     "upload_options": {
-      "description": "255A's code for SUGAR RUSH!!!!!",
-      "icon": "pros"
+      "description": "255A's code for the GVMS Comp on 1/11/26",
+      "icon": "power"
     },
     "use_early_access": false
   }
