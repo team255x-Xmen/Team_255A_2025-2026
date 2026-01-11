@@ -245,7 +245,7 @@ void LeftDescore() {
   intakeLower.move(127);
   intakeUpper.move(127);
   lockPiston.set(true);
-  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_drive_set(10_in, 30, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -276,6 +276,7 @@ void LeftDescore() {
                         {{descoreOdomTableL(1, true), descoreOdomTableL(1, false)}, fwd, 40}}, true);
   descorePiston.set(false);
   chassis.pid_wait_quick();
+  descorePiston.set(true);
 }
 
 
@@ -288,7 +289,7 @@ void RightDescore() {
   intakeLower.move(127);
   intakeUpper.move(127);
   lockPiston.set(true);
-  chassis.pid_drive_set(12_in, 40, false);
+  chassis.pid_drive_set(12_in, 30, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -319,6 +320,7 @@ void RightDescore() {
                         {{descoreOdomTableR(1, true), descoreOdomTableR(1, false)}, fwd, 40}}, true);
   descorePiston.set(false);
   chassis.pid_wait_quick();
+  descorePiston.set(true);
 }
 
 
