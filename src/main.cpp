@@ -1,6 +1,4 @@
 #include "main.h"
-#include "menu.hpp"
-#include "driver-motions.hpp"
 
 //Initialize and create the auton manager
 AutonManager Kerry; //Creates the manager, named Kerry
@@ -16,7 +14,7 @@ ez::Drive chassis(
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
     {4, -13, 7},  // Right Chassis Ports (negative port will reverse it!)
 
-    9,      // IMU Port
+    8,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
@@ -25,7 +23,7 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(8, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(10, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true; //The boolean to enable/disable the selector task
@@ -397,9 +395,9 @@ int calcIntakeSpeed(bool lower) { //Function that calculates intake speed based 
       lower ? (speed = stdMotorSpeed::FWD, 1) : 1; //Set speed to full forward
     } else if (R2&&lower) { //Same but for reverse
       lower ? (speed = stdMotorSpeed::REV, 1) : 1; //Sets to reverse
-    } else if (L1) { //Checks if trying to move upper
+    } else if (L1&&!lower) { //Checks if trying to move upper
       lower ? 1 : (speed = stdMotorSpeed::FWD, 1); //Sets to full speed
-    } else if (L2) { //If trying to reverse
+    } else if (L2&&!lower) { //If trying to reverse
       lower ? 1 : (speed = stdMotorSpeed::REV, 1); //Set to reverse
     }
   } else { //When supposed to be grouped

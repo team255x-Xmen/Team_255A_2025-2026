@@ -1,6 +1,7 @@
-#include "main.h"
-#include "liblvgl/lvgl.h"
-#include <vector>
+#include "api.h" //Pros Everything (brain, others)
+#include "autons.hpp" //Autos
+#include "liblvgl/lvgl.h" //Photos and colors
+#include <vector> //Vectors
 
 //Overall purpose is to create a class that can have objects added
 //to that have their own position on the brain screen known
@@ -290,7 +291,7 @@ class AutonManager{ //This class handles the autons. Make 1
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
     vector<colorManager> cMNG;
-    bool autonWasSelected = false;
+    bool autonWasSelected = true; //Starts true because an auton starts selected
 };
 
 //autons should not be used to interact with them besides creation

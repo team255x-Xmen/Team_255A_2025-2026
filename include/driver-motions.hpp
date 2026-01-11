@@ -2,6 +2,7 @@
 * Not directly needed but has main file
 * And subsystems as well
 */
+#include "subsystems.hpp" //Has motors and everything
 
 //Header file for driver motions
 //Declare the motions here, and use them as callbacks in opcontrol
@@ -15,4 +16,4 @@ void odomScore();
 void odomMatchLoad();
 void odomCloseScore();
 
-#endif DRIVER-MOTIONS_HPP
+#endif

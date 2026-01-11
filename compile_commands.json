@@ -79,21 +79,24 @@
             "--std=gnu++20",
             "-Wno-deprecated-enum-enum-conversion",
             "-o",
-            "bin/main.cpp.o",
-            "src\\main.cpp"
+            "bin/menu.cpp.o",
+            "src\\menu.cpp"
         ],
         "directory": "C:\\Users\\Ethan\\OneDrive\\Desktop\\255A 2025-2026",
-        "file": "src\\main.cpp"
+        "file": "src\\menu.cpp"
     },
     {
         "arguments": [
-            "clang",
+            "clang++",
             "-c",
             "-target",
             "armv7ar-none-none-eabi",
             "-fno-ms-extensions",
             "-fno-ms-compatibility",
             "-fno-delayed-template-parsing",
+            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1",
+            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/arm-none-eabi/thumb/v7-a+simd/softfp",
+            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/backward",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/include",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/include-fixed",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include",
@@ -116,13 +119,14 @@
             "-fdata-sections",
             "-fdiagnostics-color",
             "-funwind-tables",
-            "--std=gnu11",
+            "--std=gnu++20",
+            "-Wno-deprecated-enum-enum-conversion",
             "-o",
-            "bin/backgroundPhoto.c.o",
-            "src\\backgroundPhoto.c"
+            "bin/main.cpp.o",
+            "src\\main.cpp"
         ],
         "directory": "C:\\Users\\Ethan\\OneDrive\\Desktop\\255A 2025-2026",
-        "file": "src\\backgroundPhoto.c"
+        "file": "src\\main.cpp"
     },
     {
         "arguments": [
@@ -169,16 +173,13 @@
     },
     {
         "arguments": [
-            "clang++",
+            "clang",
             "-c",
             "-target",
             "armv7ar-none-none-eabi",
             "-fno-ms-extensions",
             "-fno-ms-compatibility",
             "-fno-delayed-template-parsing",
-            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1",
-            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/arm-none-eabi/thumb/v7-a+simd/softfp",
-            "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/backward",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/include",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/include-fixed",
             "-isystemC:/Users/Ethan/AppData/Roaming/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-windows/usr/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include",
@@ -201,13 +202,12 @@
             "-fdata-sections",
             "-fdiagnostics-color",
             "-funwind-tables",
-            "--std=gnu++20",
-            "-Wno-deprecated-enum-enum-conversion",
+            "--std=gnu11",
             "-o",
-            "bin/menu.cpp.o",
-            "src\\menu.cpp"
+            "bin/backgroundPhoto.c.o",
+            "src\\backgroundPhoto.c"
         ],
         "directory": "C:\\Users\\Ethan\\OneDrive\\Desktop\\255A 2025-2026",
-        "file": "src\\menu.cpp"
+        "file": "src\\backgroundPhoto.c"
     }
 ]

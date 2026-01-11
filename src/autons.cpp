@@ -1,5 +1,4 @@
 #include "main.h"
-#include "menu.hpp" //Includes menu (for color detection)
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -51,7 +50,7 @@ void default_constants() {
   chassis.pid_angle_behavior_set(ez::shortest);  // Changes the default behavior for turning, this defaults it to the shortest path there
 }
 
-float colorTurn(float angle) { //Formula for absolute turns. Input angle for red side and it will swap when blue is selected
+float turn(float angle) { //Formula for absolute turns. Input angle for red side and it will swap when blue is selected
   selectedIsBlue ? (angle = -angle) : 1; //Since I'm developing on red, blue should be swapped
   return angle;
 }
@@ -81,9 +80,11 @@ float descoreOdomTableL(int index, bool x) {
 }
 
 float descoreOdomTableR(int index, bool x) {
-  float point = 0;
-
-  point = x ? descoreOdomTableL(index, true) : -(descoreOdomTableL(index, false));
+  float point = descoreOdomTableL(index, x);
+  if (!x) {
+    point = -point;
+    point += selectedIsBlue ? -22 : 22;
+  }
   return point;
 }
 
@@ -255,10 +256,10 @@ void LeftDescore() {
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(-64_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
+  /*chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  pros::delay(1400);
-  chassis.pid_drive_set(-29_in, DRIVE_SPEED, true);
+  pros::delay(1400);*/
+  chassis.pid_drive_set(-14_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
   lockPiston.set(false);
   chassis.pid_wait_until(10_in);
@@ -267,7 +268,7 @@ void LeftDescore() {
   matchLoadPistons.set(false);
   intakeUpper.move(127);
   pros::delay(1700);
-  chassis.pid_swing_set(ez::LEFT_SWING, colorTurn(90), 70);
+  chassis.pid_swing_set(ez::LEFT_SWING, turn(90), 70);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(4_in, 30, false);
   chassis.pid_wait_quick();
@@ -279,28 +280,29 @@ void LeftDescore() {
 
 
 void RightDescore() {
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  master.print(0, 0, "Y: %f", descoreOdomTableR(0, false));
+  chassis.pid_drive_set(26_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
+  chassis.pid_turn_relative_set(23_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
   intakeUpper.move(127);
   lockPiston.set(true);
-  chassis.pid_drive_set(10_in, 55, false);
+  chassis.pid_drive_set(12_in, 40, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
   pros::delay(500);
-  chassis.pid_turn_relative_set(86_deg, TURN_SPEED, true);
+  chassis.pid_turn_relative_set(94_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(28_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(28.5_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(64_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
+  /*chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  pros::delay(1400);
-  chassis.pid_drive_set(-29_in, DRIVE_SPEED, true);
+  pros::delay(1400);*/
+  chassis.pid_drive_set(-15_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
   lockPiston.set(false);
   chassis.pid_wait_until(10_in);
@@ -309,7 +311,7 @@ void RightDescore() {
   matchLoadPistons.set(false);
   intakeUpper.move(127);
   pros::delay(1700);
-  chassis.pid_swing_set(ez::RIGHT_SWING, colorTurn(90), 70);
+  chassis.pid_swing_set(ez::LEFT_SWING, turn(90), 70);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(4_in, 30, false);
   chassis.pid_wait_quick();
@@ -430,15 +432,17 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_wait();
   pros::delay(500); //Delay to grab them
 
-
+  /*
   //Movement to second set of 4
   chassis.pid_drive_set(26_in, DRIVE_SPEED, true); //Get to other set
   chassis.pid_wait_quick();
   chassis.pid_drive_set(6_in, 50, true); //Straight line using PID.
   chassis.pid_wait_quick();
   pros::delay(600); //Time to grab
+  */
 
   
+  /*
   //Movement to the first big goal
   chassis.pid_odom_set({{{39.29_in, 28.74_in}, fwd, DRIVE_SPEED},
                         {{44.383_in, 40.381_in}, fwd, DRIVE_SPEED},
@@ -448,7 +452,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   intakeLower.move(0); //Stop on the way
   intakeUpper.move(0); //Same thing
   chassis.pid_wait();
+  */
 
+  /*
   //First scoring set (8)
   chassis.pid_drive_set(-12_in, DRIVE_SPEED, true); //Movement to scoring position
   chassis.pid_wait_quick();
@@ -463,8 +469,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   pros::delay(1200); //Time to fully score
   intakeUpper.move(0);
   lockPiston.set(true);
+  */
 
-  
+  /*
   //First match load. Upper disabled. (6)
   chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
@@ -483,8 +490,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   intakeUpper.move(0);
   intakeLower.move(0);
   lockPiston.set(true);
+  */
 
-  
+  /*
   //Next Odom
   chassis.pid_drive_set(15_in, DRIVE_SPEED, true); //Move to middle of the goal and loader
   chassis.pid_wait_quick();
@@ -498,16 +506,18 @@ void skillsAuton() { // I want to eventually be using odom for this
   intakeLower.move(127); //Start spinning before arriving
   chassis.pid_wait();
   pros::delay(400); //Time to grab
+  */
 
-
+  /*
   //Last set of 4 movement
   chassis.pid_drive_set(26_in, DRIVE_SPEED, true); //Get to other set
   chassis.pid_wait_quick();
   chassis.pid_drive_set(6_in, 50, true); //Slow down when closer
   chassis.pid_wait_quick();
   pros::delay(600); //Delay to grab
+  */
 
-
+  /*
   //Odom movement to goal area
   chassis.pid_odom_set({{{-40.017_in, -30.923_in}, fwd, DRIVE_SPEED},
                         {{-42.658_in, -48_in, -90_deg}, fwd, 60}},
@@ -516,8 +526,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   intakeLower.move(0); //Stop moving to prevent clogging
   intakeUpper.move(0); //Same thing
   chassis.pid_wait();
+  */
 
-
+  /*
   //Scoring those cubes (8)
   chassis.pid_drive_set(-12_in, DRIVE_SPEED, true); //Reverse into it
   chassis.pid_wait_quick();
@@ -532,14 +543,16 @@ void skillsAuton() { // I want to eventually be using odom for this
   pros::delay(1200);
   intakeUpper.move(0); //Stop before match loading. If block built remove
   lockPiston.set(true);
+  */
 
-  
+  /*
   //Second Match Loader
   chassis.pid_drive_set(27_in, DRIVE_SPEED, true); //Movement to it
   chassis.pid_wait_quick();
   pros::delay(3000); //Grabbing all of them
+  */
 
-
+  /*
   //Scoring second match loader (6)
   chassis.pid_drive_set(-27_in, DRIVE_SPEED, true); //Rev to goal
   chassis.pid_wait_quick();
@@ -558,24 +571,27 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_drive_set(15_in, DRIVE_SPEED, true); //Return to middle
   chassis.pid_wait_quick();
   chassis.pid_turn_set(-45_deg, TURN_SPEED, true); //Turn to movable angle
+  */
 
-
+  /*
   //Odom to third match loader
   chassis.pid_odom_set({{{-49.961_in, -60.269_in}, fwd, DRIVE_SPEED},
                         {{20.615_in, -59.784_in}, fwd, DRIVE_SPEED},
                         {{48.021_in, -47.172_in, 90_deg}, fwd, 60}},
                         true); //In line with goal and match loader
   chassis.pid_wait();
+  */
 
-
+  /*
   //Match Loader #3
   chassis.pid_drive_set(16_in, DRIVE_SPEED, true); //Move into
   chassis.pid_wait_quick();
   intakeUpper.move(127);
   intakeLower.move(127);
   pros::delay(3000); //Grab them
+  */
 
-
+  /*
   //Scoring Match Loader #3 (6)
   chassis.pid_drive_set(-27_in, DRIVE_SPEED, true); //Reverse into goal
   chassis.pid_wait_quick();
@@ -595,8 +611,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_wait_quick();
   chassis.pid_turn_set(-90_deg, TURN_SPEED, true); //Turn inwards
   chassis.pid_wait();
+  */
 
-
+  /*
   //Odom to last match loader (top left)
   chassis.pid_odom_set({{{37.107_in, 7.64_in}, fwd, DRIVE_SPEED},
                         {{17.462_in, 29.225_in}, fwd, DRIVE_SPEED},
@@ -604,16 +621,18 @@ void skillsAuton() { // I want to eventually be using odom for this
                         {{-47.051_in, 47.172_in, -90_deg}, fwd, 60}}, //
                         true);
   chassis.pid_wait();
+  */
 
-
+  /*
   //Match Loader #4
   chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   intakeUpper.move(127);
   intakeLower.move(127);
   pros::delay(3000); //Grab them
+  */
 
-
+  /*
   //Scoring match loader #4 (6)
   chassis.pid_drive_set(-27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
@@ -631,7 +650,11 @@ void skillsAuton() { // I want to eventually be using odom for this
   lockPiston.set(true);
   chassis.pid_drive_set(15_in, DRIVE_SPEED, true); //Move away from goal
   chassis.pid_wait_quick();
-  //Add park if able
+  */
+
+
+  //Park
+  //Add
 }
 
 void basicDrive() {
