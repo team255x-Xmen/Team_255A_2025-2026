@@ -5,17 +5,19 @@
 #ifndef CONVERSIONS_HPP
 #define CONVERSIONS_HPP
 
-int convInt(float input);
-int convInt(double input);
-int convInt(char input);
-float convFloat(int input);
-float convFloat(double input);
-float convFloat(char input);
-double convDouble(int input);
-double convDouble(float input);
-double convDouble(char input);
-char convChar(int input);
-char convChar(float input);
-char convChar(double input);
+//This is simple code that looks complicated because of how simple it is
+//In essence it is just the following
+
+template <typename convInput, typename convOutput> //A variable type I make that uses typename, and two types
+//Typename is a fill in a bland for a type. This can be replaced with int, float, double, char, etc.
+//That's what makes templates useful, I can use this for any and all number conversion
+
+inline convOutput convNum(convInput input) { //Creates the function. It will output a conversion of a new input
+    return static_cast<convOutput>(input); //Sets it to the inputted type
+} //End of function. Inline is saying it is const and static, and will never change across files
+//To call it, I need to just say wantedOutputType var (inputType can be int, float, etc)
+//Then later I do var = convNum<Output type>(input);
+//Overall, I and the reader need to remember, that name<output>(input)
+//The computer will handle the rest.
 
 #endif
