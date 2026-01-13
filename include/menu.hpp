@@ -2,6 +2,8 @@
 #include "autons.hpp" //Autos
 #include "liblvgl/lvgl.h" //Photos and colors
 #include <vector> //Vectors
+#include "Custom Extras/extras.hpp" //My conversions
+#include <fstream> //File management
 
 //Overall purpose is to create a class that can have objects added
 //to that have their own position on the brain screen known
@@ -106,8 +108,15 @@ class autons{ //Autons class
             return tag;
         }
 
-        bool isSkills() const {
+        bool isSkills() const { //Returns if current auton is skills
             return skills;
+        }
+
+        ~autons() { //Destructor for the class. Will remove the ability to write to the screen
+            //Cleanup can be added. I can have it print to something, or just do what I need to
+            //Since this class has no pointers to internal variables, it will be fine keeping how it is
+            //If another pointer (say void *food) was set to an internal variable using the keyword new, I would
+            //Need to delete it, to prevent a memory leak. I don't have it, so this will be empty.
         }
 
     private: //Hidden from user. Public is what is accessed
@@ -174,37 +183,23 @@ class AutonManager{ //This class handles the autons. Make 1
     void add(autons a) {list.push_back(a);} //Adds all of input a
     //Call this to add new autons
 
-    void addColorManager(colorManager c) {cMNG.push_back(c);} //Adds in Color Manager
-
     void screenTouched(int x, int y) {
 
-        if (cMNG[0].checkPressed(x, y)) { //Checks if manager was pressed
-            cMNG[0].toggle(); //Switch Color on press
+        if (cMNG.checkPressed(x, y)) { //Checks if manager was pressed
+            cMNG.toggle(); //Switch Color on press
         } //Checks first so only right color autons can be selected
 
         for (auto &a : list) { //For every item in list (called a)
             if (a.isSkills()) { //Checks if skills. Ignores color difference
                 a.setSelected(a.containsPoint(x, y));
             } else {
-                a.isBlue() == cMNG[0].isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
+                a.isBlue() == cMNG.isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
             } //Checks if correct color
             //Runs this function. This updates every auton to only select the last touched
         } //Sets selected if it contains that point
 
-        textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
-
-        for (const auto &a : list) { //Redraw after finding new selected
-            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
-            if (a.isSkills()) {
-                a.drawBox(); //Draws if skills regardless of color
-            } else { //If not skills then check color
-                cMNG[0].isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; /*
-                *Only draw if correct color
-                *(, 1) and : 1 are added so both sides are int
-                *And I don't have to add something to the false branch*/
-            }
-        } //Update visually. No need for background redraw, the boxes stay in place
-        cMNG[0].draw(); //Draws color manager (Once)
+        update_saved_auton();
+        print(); //Prints the autons
     } 
 
     string selectedAuton() { //Return the string name of the selected
@@ -218,10 +213,10 @@ class AutonManager{ //This class handles the autons. Make 1
             }
         }
         if (b == "") { //If no auton selected
-            return cMNG[0].isBlue() ? "Blue" : "Red"; //State full color with no extra spaces
+            return cMNG.isBlue() ? "Blue" : "Red"; //State full color with no extra spaces
         } //Otherwise returns full name
         //Will always default to this one (outside of any conditionals for this purpose)
-        return b + (cMNG[0].isBlue() ? " B" : " R"); //Adds color tag onto the name
+        return b + (cMNG.isBlue() ? " B" : " R"); //Adds color tag onto the name
     }
     
     void runSelectedAuton() { //Run the auton
@@ -238,17 +233,8 @@ class AutonManager{ //This class handles the autons. Make 1
         pros::delay(10); //Tiny Delay so brain screen can catch up
         //If it moves on before refresh rate can catch up it doesn't save autons
 
-        textColor = cMNG[0].isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
-
-        for (const auto &a : list) {
-            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
-            if (a.isSkills()) {
-                a.drawBox(); //Draws if skills regardless of color
-            } else { //If not skills then check color
-                cMNG[0].isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; //Draws auton if correct
-            }
-        }
-        cMNG[0].draw(); //Draws color manager (Once)
+        load_previously_saved_auton(); //Loads auton if it can via SD card
+        print(); //Prints the autons to start
     }
 
     void store() { //Stores selected auton's callback for after termination
@@ -259,6 +245,7 @@ class AutonManager{ //This class handles the autons. Make 1
                 selectedIsBlue = a.isBlue(); //Updates the seleted color with selected auton
                 wasSelected = true;
                 autonWasSelected = true;
+                a.isSkills() ? skillsSelected = true : skillsSelected = false; //Updates is skills
             }
         }
 
@@ -271,9 +258,9 @@ class AutonManager{ //This class handles the autons. Make 1
     void terminateAutons() { //Run after storing
         terminated = true; //Sets to true
         list.clear(); //Clear the list that contains autons
-        cMNG.clear(); //Clears storage so it doesn't reprint
+        //Clears storage so it doesn't reprint
         //Removes them from being able to be touched
-        //No need to deconstruct them. They're fine how they are
+        //They will deconstruct here because they leave scope, using the destructor I made in that class
         drawBG(); //Rerun Removes all boxes
     }
 
@@ -285,13 +272,111 @@ class AutonManager{ //This class handles the autons. Make 1
         drawImage();
     }
 
+    bool skills_is_selected() const {
+        return skillsSelected;
+    }
+
     private:
 
     bool terminated = false; //False by default | Helper to check if already terminated
     vector<autons> list; //Vector for the list that contains autons
     void (*storedCallback)() = nullptr; //Initialized for safety
-    vector<colorManager> cMNG;
+    colorManager cMNG{364, 476, 124, 236}; //This creates the color manager cMNG
     bool autonWasSelected = true; //Starts true because an auton starts selected
+    bool skillsSelected = false;
+
+    int print() { //Function to draw boxes and cMNG using correct color.
+        if (terminated) return 0; //Early exit if already terminated. Makes sure it cannot reprint after termination
+
+        textColor = cMNG.isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
+
+        for (const auto &a : list) {
+            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
+            if (a.isSkills()) {
+                a.drawBox(); //Draws if skills regardless of color
+            } else { //If not skills then check color
+                cMNG.isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; //Draws auton if correct
+            }
+        }
+        cMNG.draw(); //Draws color manager (Once)
+
+        return 1;
+    }
+
+    void load_previously_saved_auton() { //Checks and loads save data for autonomous
+        try { //Statement to do this. Exceptions can occur, so try for safety
+            string selected = sdSelectedCheck(); //Creates a shorter name
+            bool selectedBlue = color_auton(); //Runs this once and gives it to the variable
+            for (auto &a : list) { //Goes through every auton
+                if (a.nameIs() == selected && a.isBlue() == selectedBlue)  { //Checks if correct name and color
+                    a.setSelected(true); //Sets to true if fully correct
+                } else a.setSelected(false); //Sets to false otherwise
+            }
+        }
+        catch (int errorCode) { //Handles exceptions
+            switch (errorCode) { //Goes through errorCodes
+                case 1: //If error 1
+                printf("Error opening file. File most likely does not exist"); //Print to terminal why
+                break; //Leave switch
+                default: //If not my own error
+                printf("Other unknown error occured"); //Then explain why
+                break; //Leave switch
+            }
+        }
+    }
+
+    void update_saved_auton() { //Saves current auton to SD card for starting selected later
+        try { //Try for safety
+            saveAutonomous(list); //Save it with this function, using list
+        }
+        catch (int code) { //Catch any thrown errors
+            if (code == 2) { //If my own error
+                printf("Couldn't open file"); //Explain why
+            } else printf("Unknown exception received"); //Print anything else
+        }
+    }
+
+    string sdSelectedCheck() { //Reads to check autonLog.txt. Returns what the auton is in a string
+        ifstream selectedAutonomous("autonLog.txt"); //Creates, writes, and reads through selectedAutonomous
+        if (!selectedAutonomous.is_open()) throw 1; //If the file can't open, exit
+        string autonSelected; //Creates output
+        while (getline(selectedAutonomous, autonSelected)) { //Goes through file. Should be 1 line
+            cout<<autonSelected; //Prints current line to autonSelected
+        }
+        selectedAutonomous.close(); //Close for safety
+        return autonSelected; //End the function
+    }
+
+    bool color_auton() { //A function to check the color of the auton, and correct the color manager
+        ifstream selected("autonLog.txt"); //Opens the file is reading mode
+        if (!selected.is_open()) throw 1; //If it doesn't open, throw exception
+        bool blue; //Boolean for the color
+        string color; //String to store the name of the color
+        int line = 1; //Line index number
+        while (getline(selected, color)&&line <= 2) { //Goes through until line 2
+            if (line == 2) { //When line 2
+                cout<<color; //Print current line to color
+            }
+            ++line; //Index the line
+        }
+        color == "blue" ? blue = true : blue = false; //Sets boolean to the current color
+        if (blue != cMNG.isBlue()) cMNG.toggle(); //If the color manager is wrong correct it
+        selected.close(); //Close the file to save it
+        return blue; //End the function
+    }
+
+    void saveAutonomous(vector<autons> autos) { //Saves the selected autonomous to a file for later use
+        fstream saveFile("autonLog.txt"); //Not opened in appending mode (so it overwrites)
+        if (!saveFile.is_open()) throw 2; //If it would error it throws an exception
+        for (auto &auton : autos) { //Goes through the inputted list
+            if (auton.isSelected()) { //If selected
+                saveFile<<auton.nameIs()<<endl; //Save the name, move to line 2
+                string color = auton.isBlue() ? "blue" : "red"; //Create the color tag
+                saveFile<<color<<endl; //Save the color to line 2
+            }
+        }
+        saveFile.close(); //Close the file to save it
+    }
 };
 
 //autons should not be used to interact with them besides creation
