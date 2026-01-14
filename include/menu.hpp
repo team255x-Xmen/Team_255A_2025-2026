@@ -340,8 +340,12 @@ class AutonManager{ //This class handles the autons. Make 1
         ifstream selectedAutonomous("autonLog.txt"); //Creates, writes, and reads through selectedAutonomous
         if (!selectedAutonomous.is_open()) throw 1; //If the file can't open, exit
         string autonSelected; //Creates output
+        int line = 1; //Line index variable
         while (getline(selectedAutonomous, autonSelected)) { //Goes through file. Should be 1 line
-            cout<<autonSelected; //Prints current line to autonSelected
+            if (line == 1) { //Onlt first line contains the name
+                cout<<autonSelected; //Prints current line to autonSelected
+            }
+            ++line; //Index it so it tracks properly
         }
         selectedAutonomous.close(); //Close for safety
         return autonSelected; //End the function
