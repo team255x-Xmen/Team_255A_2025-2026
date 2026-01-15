@@ -341,9 +341,10 @@ class AutonManager{ //This class handles the autons. Make 1
         if (!selectedAutonomous.is_open()) throw 1; //If the file can't open, exit
         string autonSelected; //Creates output
         int line = 1; //Line index variable
-        while (getline(selectedAutonomous, autonSelected)) { //Goes through file. Should be 1 line
+        while (getline(selectedAutonomous, autonSelected)) { //Goes through first line
             if (line == 1) { //Onlt first line contains the name
                 cout<<autonSelected; //Prints current line to autonSelected
+                break; //Exit after reading the first line
             }
             ++line; //Index it so it tracks properly
         }
@@ -357,9 +358,10 @@ class AutonManager{ //This class handles the autons. Make 1
         bool blue; //Boolean for the color
         string color; //String to store the name of the color
         int line = 1; //Line index number
-        while (getline(selected, color)&&line <= 2) { //Goes through until line 2
+        while (getline(selected, color)) { //Goes through until line 2
             if (line == 2) { //When line 2
                 cout<<color; //Print current line to color
+                break;
             }
             ++line; //Index the line
         }
@@ -370,13 +372,12 @@ class AutonManager{ //This class handles the autons. Make 1
     }
 
     void saveAutonomous(vector<autons> autos) { //Saves the selected autonomous to a file for later use
-        fstream saveFile("autonLog.txt"); //Not opened in appending mode (so it overwrites)
+        ofstream saveFile("autonLog.txt"); //Not opened in appending mode (so it overwrites)
         if (!saveFile.is_open()) throw 2; //If it would error it throws an exception
         for (auto &auton : autos) { //Goes through the inputted list
             if (auton.isSelected()) { //If selected
-                saveFile<<auton.nameIs()<<endl; //Save the name, move to line 2
-                string color = auton.isBlue() ? "blue" : "red"; //Create the color tag
-                saveFile<<color<<endl; //Save the color to line 2
+                string output = auton.nameIs() + "\n" + (auton.isBlue() ? "blue" : "red"); //Creates a string with the two lines
+                saveFile<<output<<endl; //Save the output to the file.
             }
         }
         saveFile.close(); //Close the file to save it
