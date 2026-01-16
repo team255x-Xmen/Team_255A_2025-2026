@@ -12,9 +12,9 @@ AutonManager Kerry; //Creates the manager, named Kerry
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
-    {4, -13, 7},  // Right Chassis Ports (negative port will reverse it!)
+    {4, -14, 7},  // Right Chassis Ports (negative port will reverse it!)
 
-    14,      // IMU Port
+    10,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
@@ -23,7 +23,7 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(10, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(6, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true; //The boolean to enable/disable the selector task
@@ -50,11 +50,11 @@ int autonSelector() { //This is what runs the callbacks
   while (selectorEnable) {
     pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
     pros::screen::touch_callback(screenReleased, TOUCH_RELEASED); //Resets for next activation
-    if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) { //Can only run when not connected to field
+    /*if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) { //Can only run when not connected to field
       Kerry.store(); //Stores just to make sure
       Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
       selectorEnable = false; //Stops the loop
-    } //Not connected test to make sure the terminate and store work properly
+    } //Not connected test to make sure the terminate and store work properly*/
 
     if (Kerry.hasTerminated()) selectorEnable = false; //If terminated elsewhere, end loop
     //Used if autonomous happens before confirmation
@@ -183,6 +183,8 @@ void competition_initialize() {
 
 }
 
+bool autonTerminate = true; //Boolean to control when autonomous terminates
+
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -197,7 +199,10 @@ void competition_initialize() {
 void autonomous() {
   if (!Kerry.hasTerminated()) { //If it hasn't happened
     Kerry.store(); //Stores before clearing screen
-    Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
+    if (autonTerminate) { //If it should terminate, then terminate
+      Kerry.terminateAutons(); //Remove autons interaction and ui. Reprints photo
+    } //Doesn't terminate when manually called. Reset after so functionality works as intended
+    autonTerminate = true; //Since manually calling autonomous sets it to false, set it to true so match autons work
   } //Otherwise no need to store empty vector and redraw screen
   //This allows for autonomous to be called multiple times in a single program run
 
@@ -298,6 +303,7 @@ void ez_template_extras() {
     // Trigger the selected autonomous routine
     if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
       pros::motor_brake_mode_e_t preference = chassis.drive_brake_get();
+      autonTerminate = false; //Set to false before running autonomous
       autonomous();
       chassis.drive_brake_set(preference);
     }

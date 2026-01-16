@@ -26,6 +26,13 @@
 //Class definition is needed
 //Same as header guards
 
+struct position { //A struct for the positioning of objects on the brain screen
+    int left; //The left position
+    int right; //The right position
+    int top; //The top position
+    int bottom; //The bottom position
+};
+
 #pragma once
 
 #ifndef MENU_H //If not already made and defined
@@ -43,20 +50,20 @@ class autons{ //Autons class
 
         autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue) { //Constructor
             this->name = n; //Set name to n
-            this->positionLeft = l; //set to l
-            this->positionRight = r; //set to r
-            this->positionTop = t; //set to t
-            this->positionBottom = b; //set to b
+            this->space.left = l; //set to l
+            this->space.right = r; //set to r
+            this->space.top = t; //set to t
+            this->space.bottom = b; //set to b
             this->callback = callback; //set to callback
             this->tag = blue; //set to tag
         }
 
         autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s) { //Alternative Contructor for starting Selected
             this->name = n; //Set name to n
-            this->positionLeft = l; //set to l
-            this->positionRight = r; //set to r
-            this->positionTop = t; //set to t
-            this->positionBottom = b; //set to b
+            this->space.left = l; //set to l
+            this->space.right = r; //set to r
+            this->space.top = t; //set to t
+            this->space.bottom = b; //set to b
             this->callback = callback; //set to callback
             this->tag = blue; //set to tag
             this->Selected = s; //set to Selected
@@ -64,10 +71,10 @@ class autons{ //Autons class
 
         autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s, bool skills) { //Alternative Contructor for selected & skills
             this->name = n; //Set name to n
-            this->positionLeft = l; //set to l
-            this->positionRight = r; //set to r
-            this->positionTop = t; //set to t
-            this->positionBottom = b; //set to b
+            this->space.left = l; //set to l
+            this->space.right = r; //set to r
+            this->space.top = t; //set to t
+            this->space.bottom = b; //set to b
             this->callback = callback; //set to callback
             this->tag = blue; //set to tag
             this->Selected = s; //set to Selected
@@ -76,8 +83,8 @@ class autons{ //Autons class
 
         bool containsPoint(int x, int y) const { //Run when brain clicked
             //Checks x point, checks y point. X for l & r, Y for b & t
-            return ((x >= positionLeft&&x <= positionRight)&&
-                    (y <= positionBottom&&y >= positionTop)); //Returns if all are true
+            return ((x >= space.left&&x <= space.right)&&
+                    (y <= space.bottom&&y >= space.top)); //Returns if all are true
         }
 
         void setSelected(bool a) { //Function to set selected. Setter
@@ -91,9 +98,9 @@ class autons{ //Autons class
 
         void drawBox() const { //Call when drawing box after making background
             pros::screen::set_pen(color); //Yellow
-            pros::screen::fill_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
+            pros::screen::fill_rect(space.left, space.top, space.right, space.bottom); //Draws rectangle
             pros::screen::set_pen(textColor); //Blue
-            pros::screen::print(pros::E_TEXT_MEDIUM, (positionLeft + 8), ((positionTop + positionBottom)/2), name.c_str());
+            pros::screen::print(pros::E_TEXT_MEDIUM, (space.left + 8), ((space.top + space.bottom)/2), name.c_str());
         }
     
         string nameIs() const { //Getter for name
@@ -122,10 +129,7 @@ class autons{ //Autons class
     private: //Hidden from user. Public is what is accessed
 
         string name; //Name of auton
-        int positionLeft; //Left edge of said auton
-        int positionRight; //Right edge
-        int positionBottom; //Bottom position
-        int positionTop; //Top position
+        position space; //The space the autons will take up
         void (*callback)(); //Callback to the function
         bool tag; //Tag for checking if it is blue
         bool skills = false; //Is skills. Defaults to false unless constructed otherwise
@@ -137,15 +141,15 @@ class colorManager { //Class to manage toggle color
     public:
 
         colorManager(int l, int r, int t, int b) { //Constructor. left, right, top, and bottom bounds
-            this->positionLeft = l;
-            this->positionRight = r;
-            this->positionTop = t;
-            this->positionBottom = b;
+            this->pos.left = l;
+            this->pos.right = r;
+            this->pos.top = t;
+            this->pos.bottom = b;
         }
 
         bool checkPressed(int x, int y) {
-            return ((x >= positionLeft&&x <= positionRight)&&
-                    (y <= positionBottom&&y >= positionTop)); //Returns if all are true
+            return ((x >= pos.left&&x <= pos.right)&&
+                    (y <= pos.bottom&&y >= pos.top)); //Returns if all are true
         }
 
         void toggle() { //Toggles color | Starts blue |  Blue is true
@@ -159,19 +163,16 @@ class colorManager { //Class to manage toggle color
         void draw() {
             string name = blue ? "Blue" : "Red";
             pros::screen::set_pen(0xFFFFFF); //Always White (Stick out)
-            pros::screen::fill_rect(positionLeft, positionTop, positionRight, positionBottom); //Draws rectangle
+            pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
             pros::screen::set_pen(blue ? 0x0000FF : 0xFF0000); //if blue make blue
-            pros::screen::print(pros::E_TEXT_MEDIUM, (positionLeft + 8), ((positionTop + positionBottom)/2), name.c_str());
+            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str());
         }
 
     private:
     
         bool blue = true; //When true set textColor to blue (0x0000FF)
                           //Else set to red (0xFF0000)
-        int positionLeft; //Left edge of manager
-        int positionRight; //Right edge
-        int positionBottom; //Bottom edge
-        int positionTop; //Top edge
+        position pos; //The position for the color manager
 
 };
 

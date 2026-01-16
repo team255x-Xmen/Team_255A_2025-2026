@@ -69,7 +69,7 @@ float descoreOdomTableL(int index, bool x) {
     break;
     case 1:
     if (x) {
-      point = blue ? 19 : -19;
+      point = blue ? 17 : -17;
     } else {
       point = blue ? -60 : 60;
     }
@@ -109,7 +109,7 @@ void simpleLeft() { //Put full left side code here
   chassis.pid_turn_relative_set(-31_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
   chassis.pid_drive_set(14_in, 20, false);
   chassis.pid_wait_until(4_in);
@@ -118,7 +118,7 @@ void simpleLeft() { //Put full left side code here
   pros::delay(500);
   chassis.pid_turn_relative_set(-86_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(29_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(-63_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
@@ -138,7 +138,7 @@ void simpleRight() { //Put full code here
   chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
   chassis.pid_drive_set(14_in, 20, false);
   chassis.pid_wait_until(4_in);
@@ -147,7 +147,7 @@ void simpleRight() { //Put full code here
   pros::delay(500);
   chassis.pid_turn_relative_set(86_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(29_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(63_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
@@ -167,9 +167,9 @@ void leftDuo() { //Full code
   chassis.pid_turn_relative_set(-31_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
-  chassis.pid_drive_set(16_in, 55, false);
+  chassis.pid_drive_set(16_in, 30, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -182,16 +182,17 @@ void leftDuo() { //Full code
   lockPiston.set(false);
   intakeUpper.move(70);
   chassis.pid_wait_quick();
-  pros::delay(1900);
+  pros::delay(1100);
   chassis.pid_drive_set(49_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   lockPiston.set(true);
+  intakeUpper.move(-60);
   chassis.pid_turn_relative_set(-46_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(13_in, DRIVE_SPEED, false);
+  /*chassis.pid_drive_set(13_in, DRIVE_SPEED, false);
   chassis.pid_wait_quick();
-  pros::delay(600);
-  chassis.pid_drive_set(-27_in, DRIVE_SPEED, true);
+  pros::delay(600);*/
+  chassis.pid_drive_set(-23_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
   lockPiston.set(false);
   chassis.pid_wait_quick();
@@ -205,9 +206,9 @@ void rightDuo() { //I think you get the drill at this point
   chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
-  chassis.pid_drive_set(16_in, 55, false);
+  chassis.pid_drive_set(16_in, 30, false);
   chassis.pid_wait_until(4_in);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
@@ -220,16 +221,17 @@ void rightDuo() { //I think you get the drill at this point
   pros::delay(100);
   intakeUpper.move(70);
   chassis.pid_wait_quick();
-  pros::delay(1900);
+  pros::delay(1100);
   chassis.pid_drive_set(49_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
+  intakeUpper.move(-60);
   lockPiston.set(true);
   chassis.pid_turn_relative_set(46_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(13_in, DRIVE_SPEED, false);
+  /*chassis.pid_drive_set(13_in, DRIVE_SPEED, false);
   chassis.pid_wait_quick();
-  pros::delay(600);
-  chassis.pid_drive_set(-27_in, DRIVE_SPEED, true);
+  pros::delay(600);*/
+  chassis.pid_drive_set(-23_in, DRIVE_SPEED, true);
   intakeUpper.move(-50);
   lockPiston.set(false);
   chassis.pid_wait_quick();
@@ -243,7 +245,7 @@ void LeftDescore() {
   chassis.pid_turn_relative_set(-31_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
   chassis.pid_drive_set(10_in, 30, false);
   chassis.pid_wait_until(4_in);
@@ -267,7 +269,7 @@ void LeftDescore() {
   descorePiston.set(true);
   matchLoadPistons.set(false);
   intakeUpper.move(127);
-  pros::delay(1700);
+  pros::delay(1100);
   chassis.pid_swing_set(ez::LEFT_SWING, turn(90), 70);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(4_in, 30, false);
@@ -287,7 +289,7 @@ void RightDescore() {
   chassis.pid_turn_relative_set(23_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(127);
+  intakeUpper.move(70);
   lockPiston.set(true);
   chassis.pid_drive_set(12_in, 30, false);
   chassis.pid_wait_until(4_in);
