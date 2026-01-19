@@ -146,10 +146,7 @@ void initialize() {
 
   //Adding autons to manager
 
-  for (int i = 0; i < autonPrograms.size(); i++) { //For loop to run through the vector
-    Kerry.add(autonPrograms[i]); //Adds every auton added above
-  } //Replaces adding individual autons. You create them, adding them to the vector,
-  //And the computer handles the rest It automatically adds everything in the vector
+  Kerry.add(autonPrograms); //Adds the autons
 
 
   

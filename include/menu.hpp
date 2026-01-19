@@ -181,8 +181,7 @@ extern bool selectedIsBlue;
 class AutonManager{ //This class handles the autons. Make 1
     public:
 
-    void add(autons a) {list.push_back(a);} //Adds all of input a
-    //Call this to add new autons
+    void add(vector<autons> a) {list = a;} //Sets stored vector to input vector
 
     void screenTouched(int x, int y) {
 
