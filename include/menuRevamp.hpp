@@ -16,6 +16,7 @@
 //pros::lcd. But I don't know how that works now. I'll look into it later.
 //This file still remains to be tested though. To test, copy + paste it to menu.hpp
 //And then fix it where it needs to be fixed (autons declaration and stuff)
+//This file is designed to fit nearly perfectly with the current menu infrastructure (just adjust constructors for autons and stuff)
 
 struct brainPosition { //Struct to group the bounds of pixels into one name
     int left; //The left bound
@@ -174,6 +175,7 @@ class utilAutons : public brainSpacing { //Class that holds utility autons. Pare
     bool skills = false; //Boolean for if it is skills. False by default
 };
 
+extern bool selectedIsBlue;
 
 /*
  * This class does everything for the autonomous selector
@@ -187,7 +189,7 @@ class utilAutons : public brainSpacing { //Class that holds utility autons. Pare
 class AutonManager {
     public:
     
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons) { //Initializes the manager
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight) { //Initializes the manager
         if (isInit) throw errno; //I don't look at errno ever, but I just throw it to leave this if it already happened
 
         for (auto list : autonomousRoutines) { //Takes the vector provided
@@ -206,7 +208,7 @@ class AutonManager {
             utilities.push_back(util(name, i)); //Adds them to utility
         }
 
-        setupUtil(40); //Sets the utility bar with 40 pixels of height
+        setupUtil(utilityHeight); //Sets the utility bar with input pixels of height
         setupMenu(utilities[0].bottomPos()); //Sets up the autons starting at the utility bottom position
 
         drawBG(); //Draws the background (Bottom Layer)
@@ -275,8 +277,10 @@ class AutonManager {
             if (a.isSelected()) { //If an auto is selected
                 if (getID() == 1) { //Check the screen ID
                     storedCallback = a.blue_callback(); //Get blue if screen is blue
+                    selectedIsBlue = true; //Updates the global variable
                 } else if (getID() == 2) { //If screen is red
                     storedCallback = a.red_callback(); //Get the red callback
+                    selectedIsBlue = false; //Updates the global variable
                 }
                 autoWasSelected = true; //Update the internal tracker
                 autoIsSelected = true; //Update the global tracker (2 variable lock)
@@ -302,7 +306,7 @@ class AutonManager {
             storedCallback(); //Run the stored callback
         } else { //Otherwise
             basicDrive(); //Run the fallback auton
-        }
+        } //Basic drive will also be added to the utility screen, but it acts as a default fallback
     }
 
     void drawBG() { //Draws the background of the brain screen
@@ -359,7 +363,7 @@ class AutonManager {
     vector<utilAutons> utilAutos; //Vector for the autons on the util screen
     atomic<bool> bgLock{false}; //Atomic to prevent background multi-redrawing
     bool isSkills = false; //Boolean to store if selected auton is skills
-    bool isInit = false;
+    bool isInit = false; //Boolean to store if the manager has been initialized
 
     void setupUtil(int height) { //Sets up the utility buttons, based on input height
         int xPixel = 0; //Starting xPixel
@@ -386,11 +390,12 @@ class AutonManager {
         //To do that, check how many autons there are (= amount on both screens)
         int bottomRowCount = autos.size() / 2; //Integer division, truncates
         int topRowCount = autos.size() - bottomRowCount; //Will always be the rest
+        int ySize = 240 - minVertical;
 
         int autoni = 0; //Separate index for the autons themselves
 
         for (int i = 0; i <= topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
-            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false); //Runs this, for regular autons
+            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this, for regular autons
             ++autoni; //Indexes this as well
         }
 
@@ -398,7 +403,7 @@ class AutonManager {
         verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
 
         for (int i = 0; i <= bottomRowCount; ++i) { //Sets up the bottom row after setting it up
-            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false); //Runs this
+            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this
             ++autoni; //Indexes this as well
         }
 
@@ -411,7 +416,7 @@ class AutonManager {
         verticalPixel = minVertical; //Resets y counter
 
         for (int i = 0; i <= topRow; ++i) { //Makes the top row
-            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true); //Runs this for utility
+            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this for utility
             ++utili; //Indexes this as well
         }
 
@@ -419,12 +424,12 @@ class AutonManager {
         verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
 
         for (int i = 0; i <= bottomRow; ++i) { //Bottom row for utility
-            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true); //Runs this
+            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this
             ++utili; //Indexes this as well
         }
     }
 
-    int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil) { //Sets the input member's position
+    int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil, int availableYPixels) { //Sets the input member's position
         pixel += 4; //Adds 4 for starting offset
         int leftBound = pixel; //What the left bound is
         int horizontalDistance = (480 - (totalObjects * 8)) / totalObjects; //*8 is for spacing, then divide for the slide
@@ -435,7 +440,7 @@ class AutonManager {
         //Vertical Calculations
         verticalPixel += 4; //Offset
         int topBound = verticalPixel; //Top is now the current pixel
-        int verticalDistance = (240 - (8 * 2)) / 2; //2 is row count
+        int verticalDistance = (availableYPixels - (8 * 2)) / 2; //2 is row count
         verticalPixel += verticalDistance; //Slides that distance
         int bottomBound = verticalPixel; //Creates bottom bound
         //No need to offset vertical pixel again, since the create menu does that automatically
