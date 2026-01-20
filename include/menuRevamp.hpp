@@ -4,7 +4,6 @@
 #include <vector> //Vectors
 #include "Custom Extras/extras.hpp" //My conversions
 #include <fstream> //File management
-#include <atomic> //The atomic I use later
 
 
 //Goal of this file:
@@ -361,7 +360,6 @@ class AutonManager {
     bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
     bool terminated = false; //Tracker for if termination has occured
     vector<utilAutons> utilAutos; //Vector for the autons on the util screen
-    atomic<bool> bgLock{false}; //Atomic to prevent background multi-redrawing
     bool isSkills = false; //Boolean to store if selected auton is skills
     bool isInit = false; //Boolean to store if the manager has been initialized
 
@@ -457,19 +455,16 @@ class AutonManager {
     void drawScreen() { //Draws the brain screen based on current ID and what's selected
         if (terminated) throw 1; //If already terminated, leave early.
         if (getID() == 3) { //If the screen is the utility screen
-            if (!bgLock.exchange(true)) { //If it was false (and sets it to true to prevent multiple)
-                drawBG(); //Since there will be fewer than the autos, redraw to reset. Atomic prevents multiple times
-                pros::delay(10); //Waits after drawing background (only when it redraws it)
-            } //This makes the background redraw once while redrawing on the utility screen (it redraws when first entering it)
-
             for (auto &u : utilAutos) { //Goes through every utility Auton
                 textColor = BLACK; //Sets the text color to black
                 color = u.isSelected() ? YELLOW : WHITE; //And the background to yellow if selected and white otherwise
                 u.drawBox(); //Then it draws the auton
             }
+            //All screens auto-fill in any available space,
+            //So even though the utilities probably will have less
+            //With at least 2 it covers up the old screen when drawing, so no need to redraw background
 
         } else { //If any other screen
-            bgLock.store(false); //Sets it to false (it switched, so it resets so that next time it redraws)
             for (auto &a : autos) { //Then it goes through every auton
                 if (screenID == 1) textColor = BLUE; //If the screen is blue, set text to blue
                 if (screenID == 2) textColor = RED; //If the screen is red, set text to red
