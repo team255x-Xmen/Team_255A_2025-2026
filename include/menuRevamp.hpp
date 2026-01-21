@@ -4,6 +4,8 @@
 #include <vector> //Vectors
 #include "Custom Extras/extras.hpp" //My conversions
 #include <fstream> //File management
+#include <atomic>
+#include "iostream" //I/O stream
 
 
 //Goal of this file:
@@ -189,7 +191,7 @@ class AutonManager {
     public:
     
     void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight) { //Initializes the manager
-        if (isInit) throw errno; //I don't look at errno ever, but I just throw it to leave this if it already happened
+        if (isInit) return; //Leaves early if already initialized
 
         for (auto list : autonomousRoutines) { //Takes the vector provided
             autos.push_back(list); //And stores it
@@ -239,7 +241,7 @@ class AutonManager {
     }
 
     void screenTouch(int x, int y) { //Checks everything for touch identification, then redraws screen
-        for (auto &u : utilities) { //Checks utilites
+        for (auto &u : utilities) { //Checks utilities
             if (u.containsPoint(x, y)) setID(u.getID()); //Updates ID if it should
         }
 
@@ -257,11 +259,12 @@ class AutonManager {
                 a.setSelected(false); //Does that
             }
 
-            for (auto &u : utilAutos) { //Check the utilites for touch
+            bool skillsActivated = false;
+            for (auto &u : utilAutos) { //Check the utilities for touch
                 u.setSelected(u.containsPoint(x, y)); //Checks them
 
-                if (u.is_skills()&&u.isSelected()) isSkills = true; //If the selected is skills update boolean
-                else isSkills = false; //Otherwise set it to false
+                if (u.is_skills()&&u.isSelected()) {isSkills = true; skillsActivated = true;} //If the selected is skills update boolean
+                else if (!skillsActivated) isSkills = false; //Otherwise set it to false
             }
 
         }
@@ -354,7 +357,7 @@ class AutonManager {
 
     private: //Private Section of the manager
     vector<autons> autos; //Vector to store the autons
-    vector<util> utilities; //Vector to place utilites (color and debug)
+    vector<util> utilities; //Vector to place utilities (color and debug)
     char screenID = 1; //1 by default
     void (*storedCallback)() = nullptr; //The callback storage
     bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
@@ -362,6 +365,7 @@ class AutonManager {
     vector<utilAutons> utilAutos; //Vector for the autons on the util screen
     bool isSkills = false; //Boolean to store if selected auton is skills
     bool isInit = false; //Boolean to store if the manager has been initialized
+    atomic<bool> bgRedrawLock{true};
 
     void setupUtil(int height) { //Sets up the utility buttons, based on input height
         int xPixel = 0; //Starting xPixel
@@ -454,7 +458,17 @@ class AutonManager {
 
     void drawScreen() { //Draws the brain screen based on current ID and what's selected
         if (terminated) throw 1; //If already terminated, leave early.
+
         if (getID() == 3) { //If the screen is the utility screen
+
+            bool expected = true; //This is what will make the background redraw, if the lock is == true
+            bool desired = false; //This is what it will set the lock to when it is true (should redraw)
+
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
+                drawBG();
+                pros::delay(10);
+            }
+
             for (auto &u : utilAutos) { //Goes through every utility Auton
                 textColor = BLACK; //Sets the text color to black
                 color = u.isSelected() ? YELLOW : WHITE; //And the background to yellow if selected and white otherwise
@@ -465,6 +479,15 @@ class AutonManager {
             //With at least 2 it covers up the old screen when drawing, so no need to redraw background
 
         } else { //If any other screen
+
+            bool expected = false; //This is what will make the background redraw, if the lock is == false
+            bool desired = true; //This is what it will set the lock to when it is false (should redraw)
+
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
+                drawBG();
+                pros::delay(10);
+            }
+
             for (auto &a : autos) { //Then it goes through every auton
                 if (screenID == 1) textColor = BLUE; //If the screen is blue, set text to blue
                 if (screenID == 2) textColor = RED; //If the screen is red, set text to red
@@ -544,7 +567,7 @@ class AutonManager {
             }
         }
 
-        for (auto &u : utilAutos) { //Goes through the utilites
+        for (auto &u : utilAutos) { //Goes through the utilities
             string outputString = ""; //Creates the string for the output
             if (u.isSelected()) { //If the utility is selected
                 outputString += u.nameIs() + "\n" + "3"; //Give it name and utility tag
