@@ -4,7 +4,7 @@
 #include <vector> //Vectors
 #include "Custom Extras/extras.hpp" //My conversions
 #include <fstream> //File management
-#include <atomic>
+#include <atomic> //For the atomic later
 #include "iostream" //I/O stream
 
 
@@ -454,9 +454,11 @@ class AutonManager {
             bool desired = false; //This is what it will set the lock to when it is true (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //This checks if it is true, and if so, sets it to false
-                drawBG(); //Then if it was the expected value, draw the background
-                pros::delay(20); //Delay
-                drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
+                if (autos.size() != utilAutos.size()) {
+                    drawBG(); //Then if it was the expected value, draw the background
+                    pros::delay(20); //Delay
+                    drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
+                }
             }
 
             for (auto &u : utilAutos) { //Goes through every utility Auton
@@ -474,9 +476,11 @@ class AutonManager {
             bool desired = true; //This is what it will set the lock to when it is false (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //For the same reason as explained above
-                drawBG(); //Draws background
-                pros::delay(20); //Refresh delay
-                drawUtilBar(); //Redraw utility bar
+                if (autos.size() != utilAutos.size()) {
+                    drawBG(); //Draws background
+                    pros::delay(20); //Refresh delay
+                    drawUtilBar(); //Redraw utility bar
+                }
             } //This is the opposite of what is used for the utility check
 
             for (auto &a : autos) { //Then it goes through every auton

@@ -25,3 +25,7 @@ void skillsAuton();
 
 //Backup (if nothing selected)
 void basicDrive();
+
+//Other utility autons
+void measure_offsets();
+void simpleOdomDrive();

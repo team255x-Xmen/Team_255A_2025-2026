@@ -120,6 +120,8 @@ void initialize() {
   //Utilities
   utilityAutons.push_back(utilAutons("Skills", skillsAuton, true)); //And stop me from forgetting stuff
   utilityAutons.push_back(utilAutons("Simple Drive", basicDrive)); //The vectors get auto added when initializing
+  utilityAutons.push_back(utilAutons("Odom Diagnostics", measure_offsets));
+  utilityAutons.push_back(utilAutons("Simple Odom", simpleOdomDrive));
   //For utilities (single callback autons) they go:
     //name, callback, (overload) is_skills;
   //They are for single callback autons, and get put into the utilities section
