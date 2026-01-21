@@ -108,33 +108,25 @@ void initialize() {
 
   std::vector<autons> autonPrograms; //Vector to store the autons
   //This will reduce how much code I need to add, and abstracts it
+  std::vector<utilAutons> utilityAutons;
 
   //Blue
 
   //First Row
-  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideB, true, true)); //Each gets
-  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideB, true));    //added to the vector
-  autonPrograms.push_back(autons("L Descore", 244, 356, 4, 116, LeftDescoreB, true));           //with all the qualities
-  autonPrograms.push_back(autons("R Descore", 364, 476, 4, 116, RightDescoreB, true));          //So later the vector
+  autonPrograms.push_back(autons("L Simple", simpleLeftSideB, simpleLeftSideR, true)); //Each gets
+  autonPrograms.push_back(autons("R Simple", simpleRightSideB, simpleRightSideR));    //added to the vector
+  autonPrograms.push_back(autons("L Descore", LeftDescoreB, LeftDescoreR));           //with all the qualities
+  autonPrograms.push_back(autons("R Descore", RightDescoreB, RightDescoreR));          //So later the vector
 
   //Second Row
-  autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPB, true));    //Can just be run through
-  autonPrograms.push_back(autons("R 2 Goal", 124, 236, 124, 236, RightDuoAWPB, true)); //And reduce lines
+  autonPrograms.push_back(autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR));    //Can just be run through
+  autonPrograms.push_back(autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR)); //And reduce lines
 
-  //Red
-
-  //First Row
-  autonPrograms.push_back(autons("L Simple", 4, 116, 4, 116, simpleLeftSideR, false));       //Each gets
-  autonPrograms.push_back(autons("R Simple", 124, 236, 4, 116, simpleRightSideR, false));    //added to the vector
-  autonPrograms.push_back(autons("L Descore", 244, 356, 4, 116, LeftDescoreR, false));           //with all the qualities
-  autonPrograms.push_back(autons("R Descore", 364, 476, 4, 116, RightDescoreR, false));          //So later the vector
-
-  //Second Row
-  autonPrograms.push_back(autons("L 2 Goal", 4, 116, 124, 236, LeftDuoAWPR, false));    //Can just be run through
-  autonPrograms.push_back(autons("R 2 Goal", 124, 236, 124, 236, RightDuoAWPR, false)); //And reduce lines
+  
 
   //Skills
-  autonPrograms.push_back(autons("Skills", 244, 356, 124, 236, skillsAuton, true, false, true)); //And stop me from forgetting stuff
+  utilityAutons.push_back(utilAutons("Skills", skillsAuton, true)); //And stop me from forgetting stuff
+  utilityAutons.push_back(utilAutons("Simple Drive", basicDrive));
   //Booleans: Is blue (not important), doesn't start selected, and is skills
 
   //Initialization
@@ -146,12 +138,10 @@ void initialize() {
 
   //Adding autons to manager
 
-  Kerry.add(autonPrograms); //Adds the autons
+  Kerry.initialize(autonPrograms, utilityAutons, 40); //Adds the autons
 
 
   
-  //After adding initialize manager
-  Kerry.printAutons(); //Set up screen after adding autons. Initializes
   pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
   //At some point add in a color sorter and run the task here (so it runs globally)
@@ -222,7 +212,7 @@ void autonomous() {
   to be consistent
   */
 
-  Kerry.runSelectedAuton(); //Calls selected Auton
+  Kerry.autonomous(); //Calls selected Auton
 }
 
 /**

@@ -4,403 +4,620 @@
 #include <vector> //Vectors
 #include "Custom Extras/extras.hpp" //My conversions
 #include <fstream> //File management
-
-//Overall purpose is to create a class that can have objects added
-//to that have their own position on the brain screen known
-//So manual touch identification is not required
-//Items are then added to this class in main.cpp
-//And defined in autons.cpp
-//Now how to accomplish it?
+#include <atomic>
+#include "iostream" //I/O stream
 
 
-//Now you can add an auton with a constructor that gives its information
-//Then we need to add something into the class that checks if the brain is touched
-//In the bounds of l, r, b, and t
-//Unless there is a way to automatically have that known | Look into that
+//Goal of this file:
+//Redo the menu with 3 sections (red, blue, utility)
+//Plus calculations for autons, so all I have to do
+//Is create the autons class with a string and two callbacks
 
-//When checked, set a boolean
-//When auton runs, look through every member of the class
-//Find which one has the boolean set to true
-//Auton should then use the callback associated.
+//Apparently this idea of an auton selector can also be done using
+//pros::lcd. But I don't know how that works now. I'll look into it later.
+//This file still remains to be tested though. To test, copy + paste it to menu.hpp
+//And then fix it where it needs to be fixed (autons declaration and stuff)
+//This file is designed to fit nearly perfectly with the current menu infrastructure (just adjust constructors for autons and stuff)
 
-//Class definition is needed
-//Same as header guards
-
-struct position { //A struct for the positioning of objects on the brain screen
-    int left; //The left position
-    int right; //The right position
-    int top; //The top position
-    int bottom; //The bottom position
+struct brainPosition { //Struct to group the bounds of pixels into one name
+    int left; //The left bound
+    int right; //The right bound
+    int top; //The top bound
+    int bottom; //The bottom bound
 };
 
-#pragma once
+#pragma once //Header guard
+#ifndef MENUREVAMP_HPP //Header check
+#define MENUREVAMP_HPP //The actual definition
 
-#ifndef MENU_H //If not already made and defined
-#define MENU_H //Start of definition
+#define BLACK 0x000000 //Abbreviates black to its hexadecimal number
+#define BLUE 0x0000FF //Abbreviates blue to its hexadecimal number
+#define RED 0xFF0000 //Abbreviates red to its hexadecimal number
+#define YELLOW 0x00FFFF //Abbreviates yellow to its hexadecimal number
+#define WHITE 0xFFFFFF //Abbreviates white to its hexadecimal number
+//This makes it easier to read later
 
-using namespace std; //So any logs and standard library don't need namespace defintiion
+using namespace std; //std namespace is used
 
-extern void drawImage();
+extern void drawImage(); //The drawImage function
 
 extern int color; //variable to use as color
 extern int textColor; //Variable for text color
 
-class autons{ //Autons class
-    public: //Accessed by user. These are called
+class brainSpacing { //Simple class with the name and pos variables, as well as point checking and drawing functions
+    public: //Section that gets put into public for the children
 
-        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue) { //Constructor
-            this->name = n; //Set name to n
-            this->space.left = l; //set to l
-            this->space.right = r; //set to r
-            this->space.top = t; //set to t
-            this->space.bottom = b; //set to b
-            this->callback = callback; //set to callback
-            this->tag = blue; //set to tag
-        }
+    bool containsPoint(int x, int y) const { //Run when brain clicked
+        //Checks x point, checks y point. X for l & r, Y for b & t
+        return ((x >= pos.left&&x <= pos.right)&&
+                (y <= pos.bottom&&y >= pos.top)); //Returns if all are true
+    }
 
-        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s) { //Alternative Contructor for starting Selected
-            this->name = n; //Set name to n
-            this->space.left = l; //set to l
-            this->space.right = r; //set to r
-            this->space.top = t; //set to t
-            this->space.bottom = b; //set to b
-            this->callback = callback; //set to callback
-            this->tag = blue; //set to tag
-            this->Selected = s; //set to Selected
-        }
+    void drawBox() const { //Call when drawing box after making background
+        pros::screen::set_pen(color); //Yellow
+        pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
+        pros::screen::set_pen(textColor); //Blue
+        pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+    }
 
-        autons(string n, int l, int r, int t, int b, void (*callback)(), bool blue, bool s, bool skills) { //Alternative Contructor for selected & skills
-            this->name = n; //Set name to n
-            this->space.left = l; //set to l
-            this->space.right = r; //set to r
-            this->space.top = t; //set to t
-            this->space.bottom = b; //set to b
-            this->callback = callback; //set to callback
-            this->tag = blue; //set to tag
-            this->Selected = s; //set to Selected
-            this->skills = skills; //set to skills
-        }
+    void setPosition(int left, int right, int top, int bottom) { //Sets the member's position to the inputted numberds
+        pos.left = left; //Sets left to left
+        pos.right = right; //Sets right to right
+        pos.top = top; //Sets top to top
+        pos.bottom = bottom; //Sets bottom to bottom
+    }
 
-        bool containsPoint(int x, int y) const { //Run when brain clicked
-            //Checks x point, checks y point. X for l & r, Y for b & t
-            return ((x >= space.left&&x <= space.right)&&
-                    (y <= space.bottom&&y >= space.top)); //Returns if all are true
-        }
-
-        void setSelected(bool a) { //Function to set selected. Setter
-            this->Selected = a; //Sets boolean
-        }
-
-        //use const for read-only functions.
-        bool isSelected() const { //Returns if it is selected
-            return Selected;
-        }
-
-        void drawBox() const { //Call when drawing box after making background
-            pros::screen::set_pen(color); //Yellow
-            pros::screen::fill_rect(space.left, space.top, space.right, space.bottom); //Draws rectangle
-            pros::screen::set_pen(textColor); //Blue
-            pros::screen::print(pros::E_TEXT_MEDIUM, (space.left + 8), ((space.top + space.bottom)/2), name.c_str());
-        }
-    
-        string nameIs() const { //Getter for name
-            return name;
-        }
-
-        void (*callbackIs())() { //Returns the callback function pointer
-            return callback;
-        }
-
-        bool isBlue() const { //Read-only to check if blue auton
-            return tag;
-        }
-
-        bool isSkills() const { //Returns if current auton is skills
-            return skills;
-        }
-
-        ~autons() { //Destructor for the class. Will remove the ability to write to the screen
-            //Cleanup can be added. I can have it print to something, or just do what I need to
-            //Since this class has no pointers to internal variables, it will be fine keeping how it is
-            //If another pointer (say void *food) was set to an internal variable using the keyword new, I would
-            //Need to delete it, to prevent a memory leak. I don't have it, so this will be empty.
-        }
-
-    private: //Hidden from user. Public is what is accessed
-
-        string name; //Name of auton
-        position space; //The space the autons will take up
-        void (*callback)(); //Callback to the function
-        bool tag; //Tag for checking if it is blue
-        bool skills = false; //Is skills. Defaults to false unless constructed otherwise
-
-        bool Selected = false; //Selected tracker | Starts false
+    protected: //This section can't be accessed except by the children
+    string name; //The name of the member
+    brainPosition pos; //The position for it
 };
 
-class colorManager { //Class to manage toggle color
-    public:
+class autons : public brainSpacing { //The autons class that inherits brainSpacing (parent class) and sets default to public
+    public: //The public section
 
-        colorManager(int l, int r, int t, int b) { //Constructor. left, right, top, and bottom bounds
-            this->pos.left = l;
-            this->pos.right = r;
-            this->pos.top = t;
-            this->pos.bottom = b;
-        }
+    autons(string auton_name, void (*Blue_Callback)(), void (*Red_Callback)()) { //Default constructor. Sets the name, and the 2 callbakcs
+        name = auton_name; //Updates the name
+        blueCallback = Blue_Callback; //Sets the blue callback
+        redCallback = Red_Callback; //Sets the red callback
+    } //Selected is false by default
 
-        bool checkPressed(int x, int y) {
-            return ((x >= pos.left&&x <= pos.right)&&
-                    (y <= pos.bottom&&y >= pos.top)); //Returns if all are true
-        }
+    autons(string auton_name, void (*Blue_Callback)(), void (*Red_Callback)(), bool starts_selected) { //Constructor for setting a default selected auton
+        name = auton_name; //Sets the name
+        blueCallback = Blue_Callback; //Sets callback 1
+        redCallback = Red_Callback; //Sets callback 2
+        selected = starts_selected; //Sets the selected state to what is given
+    }
 
-        void toggle() { //Toggles color | Starts blue |  Blue is true
-            this->blue = !blue;
-        }
+    void (*blue_callback())() { //Returns the blue callback of the auton
+        return blueCallback; //Returns it
+    }
 
-        bool isBlue() { //Checks if blue
-            return blue;
-        }
+    void (*red_callback())() { //Returns the red callback of the auton
+        return redCallback; //Returns it
+    }
 
-        void draw() {
-            string name = blue ? "Blue" : "Red";
-            pros::screen::set_pen(0xFFFFFF); //Always White (Stick out)
-            pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
-            pros::screen::set_pen(blue ? 0x0000FF : 0xFF0000); //if blue make blue
-            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str());
-        }
+    bool isSelected() const { //Read-only for checking if the current auton is selected
+        return selected; //Returns the current state
+    }
 
-    private:
+    void setSelected(bool set_to) { //Sets the input boolean to the member's selected variable
+        selected = set_to; //Updates the state
+    }
+
+    string nameIs() const { //Returns the name of the member's string
+        return name; //Returns it
+    }
+
+    private: //The private section. The protected section of the parent gets added to this section
+    void (*blueCallback)(); //Blue callback
+    void (*redCallback)(); //Red callback
+    bool selected = false; //Selected variable
+};
+
+
+class ManagerUtil : public brainSpacing { //The ManagerUtil structure for the top bar. brainSpacing is the parent
+    public: //Public section
+
+    ManagerUtil(string util_name, char ID) { //Constructor for setting the name and ID of the utility
+        utilID = ID; //Sets the id
+        name = util_name; //Sets the name
+    }
+
+    char getID() const { //Returns the id of the member utility
+        return utilID; //Returns ID
+    }
+
+    int bottomPos() const { //Returns the bottom position of the member
+        return pos.bottom; //Returns the integer
+    }
     
-        bool blue = true; //When true set textColor to blue (0x0000FF)
-                          //Else set to red (0xFF0000)
-        position pos; //The position for the color manager
+    private: //The private section
+    char utilID; //The ID of the member
+};
 
+
+class utilAutons : public brainSpacing { //Class that holds utility autons. Parent is brainSpacing
+    public: //Public section
+
+    utilAutons(string utilName, void (*singleCallback)()) { //The constructor for giving the name and callback
+        name = utilName; //Sets the name
+        callback = singleCallback; //Sets the callback
+    } //Skills is assumed false by default
+
+    utilAutons(string utilName, void (*singleCallback)(), bool is_skills) { //Alternative constructor for setting skills
+        name = utilName; //Sets the name
+        callback = singleCallback; //Sets the callback
+        skills = is_skills; //Sets skills
+    }
+
+    void setSelected(bool state) { //Sets the selected state to the input provided
+        selected = state; //Sets the state
+    }
+
+    bool isSelected() const { //Returns the current selected state of the member
+        return selected; //Returns it
+    }
+
+    void (*callbackIs())() { //Returns the callback stored in the utilAutons Member
+        return callback; //Returns the callback
+    }
+
+    string nameIs() const { //Returns the name of utilAutons member
+        return name; //Returns the name
+    }
+
+    bool is_skills() const { //Returns the boolean of if it is skills
+        return skills; //Returns the boolean
+    }
+
+    private: //Private section
+    void (*callback)(); //The callback for the utilAuton
+    bool selected = false; //The selected boolean
+    bool skills = false; //Boolean for if it is skills. False by default
 };
 
 extern bool selectedIsBlue;
 
-class AutonManager{ //This class handles the autons. Make 1
+/*
+ * This class does everything for the autonomous selector
+ *  - Handles touches
+ *  - Handles screen ID
+ *  - Gets everything for the user
+ *  - Generates utilities
+ *  - Stores Util and Non-Util Autons
+ *  - And More
+*/
+class AutonManager {
     public:
+    
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight) { //Initializes the manager
+        if (isInit) return; //Leaves early if already initialized
 
-    void add(vector<autons> a) {list = a;} //Sets stored vector to input vector
+        for (auto list : autonomousRoutines) { //Takes the vector provided
+            autos.push_back(list); //And stores it
+        }
 
-    void screenTouched(int x, int y) {
+        for (auto autos : specialAutons) { //Takes the utility autons
+            utilAutos.push_back(autos); //And stores them
+        }
 
-        if (cMNG.checkPressed(x, y)) { //Checks if manager was pressed
-            cMNG.toggle(); //Switch Color on press
-        } //Checks first so only right color autons can be selected
+        for (int i = 0; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
+            string name = ""; //Empty string for the name
+            if (i == 1) name = "Blue"; //Blue has ID of 1
+            if (i == 2) name = "Red"; //Red has ID of 2
+            if (i == 3) name = "Utility"; //Utility has ID of 3
+            utilities.push_back(ManagerUtil(name, i)); //Adds them to utility
+        }
 
-        for (auto &a : list) { //For every item in list (called a)
-            if (a.isSkills()) { //Checks if skills. Ignores color difference
-                a.setSelected(a.containsPoint(x, y));
-            } else {
-                a.isBlue() == cMNG.isBlue() ? a.setSelected(a.containsPoint(x, y)) : a.setSelected(false);
-            } //Checks if correct color
-            //Runs this function. This updates every auton to only select the last touched
-        } //Sets selected if it contains that point
+        setupUtil(utilityHeight); //Sets the utility bar with input pixels of height
+        setupMenu(utilities[0].bottomPos()); //Sets up the autons starting at the utility bottom position
 
-        update_saved_auton();
-        print(); //Prints the autons
-    } 
+        drawBG(); //Draws the background (Bottom Layer)
 
-    string selectedAuton() { //Return the string name of the selected
-        string b = "";
-        for (auto &a : list) {
-            if (a.isSelected()) {
-                b = a.nameIs();
-                if (a.isSkills()) {
-                    return b; //If skills end before adding color tag
+        pros::delay(10); //Waits so brain can catch up
+
+        pros::screen::set_pen(BLACK); //Sets pen to black
+        pros::screen::fill_rect(0, 0, 480, utilities[0].bottomPos()); //Draws box at the top of the screen
+
+        for (auto &u : utilities) { //This draws the utilities
+            if (u.getID() == 1) textColor = BLUE; //If blue, set text to blue
+            if (u.getID() == 2) textColor = RED; //If red, set text to red
+            if (u.getID() == 3) textColor = BLACK; //If utility, set text to black
+            color = WHITE; //Background color is white
+            u.drawBox(); //Draws the utility box
+        } //They get drawn once
+
+        load_sd_card_save(); //Loads the SD card (sets something to true)
+        drawScreen(); //Draws the screen after trying to load
+        isInit = true; //Updates the initialized value to true when done all of this
+    }
+
+    char getID() const { //Returns the current screen ID
+        return screenID; //Returns it
+    }
+
+    void setID(char ID) { //Sets the screen ID to input ID
+        screenID = ID; //Sets it
+    }
+
+    void screenTouched(int x, int y) { //Checks everything for touch identification, then redraws screen
+        for (auto &u : utilities) { //Checks utilities
+            if (u.containsPoint(x, y)) setID(u.getID()); //Updates ID if it should
+        }
+
+        if (screenID != 3) { //If not 3 (utility screen)
+            for (auto &u : utilAutos) { //Set all utilities to false
+                u.setSelected(false); //Sets to false
+            }
+
+            for (auto &a : autos) { //Check the autons
+                a.setSelected(a.containsPoint(x, y)); //Checks them
+            }
+
+        } else { //If the utility screen is up
+            for (auto &a : autos) { //Set all autos to false
+                a.setSelected(false); //Does that
+            }
+
+            bool skillsActivated = false;
+            for (auto &u : utilAutos) { //Check the utilities for touch
+                u.setSelected(u.containsPoint(x, y)); //Checks them
+
+                if (u.is_skills()&&u.isSelected()) {isSkills = true; skillsActivated = true;} //If the selected is skills update boolean
+                else if (!skillsActivated) isSkills = false; //Otherwise set it to false
+            }
+
+        }
+
+        save_sd_card(); //Saves what is currently selected to the SD card
+        drawScreen(); //Redraw after being done
+    }
+
+    void store() { //Updates the manager's internal pointer to what is selected
+        bool autoWasSelected = false; //Tracker for if something is selected
+        for (auto &a : autos) { //Goes through the autos
+            if (a.isSelected()) { //If an auto is selected
+                if (getID() == 1) { //Check the screen ID
+                    storedCallback = a.blue_callback(); //Get blue if screen is blue
+                    selectedIsBlue = true; //Updates the global variable
+                } else if (getID() == 2) { //If screen is red
+                    storedCallback = a.red_callback(); //Get the red callback
+                    selectedIsBlue = false; //Updates the global variable
+                }
+                autoWasSelected = true; //Update the internal tracker
+                autoIsSelected = true; //Update the global tracker (2 variable lock)
+            }
+        }
+
+        for (auto &u : utilAutos) { //Then check the utility auton's
+            if (u.isSelected()) { //If utility is selected
+                storedCallback = u.callbackIs(); //Set internal pointer to the callback it has
+                autoWasSelected = true; //Update the internal tracker
+                autoIsSelected = true; //Update the global tracker
+            }
+        }
+
+        if (!autoWasSelected) { //If no auton was selected (based on internal variables)
+            storedCallback = nullptr; //Reset the pointer (lock 1)
+            autoIsSelected = false; //Set global tracker to false (lock 2)
+        }
+    }
+
+    void autonomous() { //Runs the stored autonomous routine
+        if (storedCallback&&autoIsSelected) { //If stored callback != nullptr (lock 1) and global says something is selected (lock 2)
+            storedCallback(); //Run the stored callback
+        } else { //Otherwise
+            basicDrive(); //Run the fallback auton
+        } //Basic drive will also be added to the utility screen, but it acts as a default fallback
+    }
+
+    void drawBG() { //Draws the background of the brain screen
+        drawImage(); //Function that draws the background
+    }
+
+    void terminateAutons() { //Prevents further brain printing.
+        terminated = true; //Updates global tracker for termination
+        utilities.clear(); //Clears the utilities
+        autos.clear(); //Clears the autons
+        utilAutos.clear(); //Clears the utility autons
+        isInit = false; //Resets this (I don't plan on init and terminating the manager multiple times, but with this it can be done)
+        drawBG(); //Redraws background after
+    }
+
+    bool hasTerminated() const { //Reads the current state of the termination variable
+        return terminated; //Returns the variable
+    }
+
+    string selectedAuton() { //Returns the string name of the selected autonomous
+        string output = ""; //String to store the output
+
+        if (getID() != 3) { //If not the utility screen
+            getID() == 1 ? output = "Blue" : output = "Red"; //Sets it to this by default (if nothing selected, show color)
+            for (const auto &a : autos) { //Goes through the autons
+                if (a.isSelected()) { //If any are selected
+                    output = a.nameIs(); //Set the string to the name and
+                    output += getID() == 1 ? " B" : " R"; //The color tag
+                }
+            }
+        } else { //If it is the utility screen
+            output = "Utility"; //Set it to this by default (same reason as before)
+            for (const auto &u : utilAutos) { //Go through the utilAutons
+                if (u.isSelected()) { //If one is selected
+                    output = u.nameIs() + " U"; //Set the output to the name plus the U (Utility) tag.
                 }
             }
         }
-        if (b == "") { //If no auton selected
-            return cMNG.isBlue() ? "Blue" : "Red"; //State full color with no extra spaces
-        } //Otherwise returns full name
-        //Will always default to this one (outside of any conditionals for this purpose)
-        return b + (cMNG.isBlue() ? " B" : " R"); //Adds color tag onto the name
+
+        return output; //Returns the output string
     }
-    
-    void runSelectedAuton() { //Run the auton
-        if (storedCallback&&autonWasSelected) { //Checks if initialized
-            storedCallback(); //Runs callback
-        } else {
-            basicDrive(); //Runs backup if nothing was selected
+
+    bool skills_is_selected() const { //Reads if the auton selected is skills
+        return isSkills; //Returns the boolean
+    }
+
+    private: //Private Section of the manager
+    vector<autons> autos; //Vector to store the autons
+    vector<ManagerUtil> utilities; //Vector to place utilities (color and debug)
+    char screenID = 1; //1 by default
+    void (*storedCallback)() = nullptr; //The callback storage
+    bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
+    bool terminated = false; //Tracker for if termination has occured
+    vector<utilAutons> utilAutos; //Vector for the autons on the ManagerUtil screen
+    bool isSkills = false; //Boolean to store if selected auton is skills
+    bool isInit = false; //Boolean to store if the manager has been initialized
+    atomic<bool> bgRedrawLock{true};
+
+    void setupUtil(int height) { //Sets up the utility buttons, based on input height
+        int xPixel = 0; //Starting xPixel
+        int xSlide = (480 - (utilities.size() * 8)) / utilities.size(); //Determines spacing by total amount
+        for (auto &utils : utilities) { //For loop to set the utility's positions
+            xPixel += 4; //Starts by moving forward 4 (spacing)
+            int topBound = 0; //Sets top to 0
+            int bottomBound = height; //Sets bottom to what is wanted
+            int leftBound = xPixel; //Current pixel is left bound
+            xPixel += xSlide; //Moves to the right however much is needed
+            int rightBound = xPixel; //Sets the right bound to current pixel
+            utils.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the positions
+            xPixel += 4; //Spaces out once more
+        } //It does this for every utility
+    }
+
+    void setupMenu(int minVertical) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
+        //Assume 2 rows per screen
+        //3 screens in total (red, blue, ManagerUtil)
+        int horizontalPixel = 0; //Starts at left edge
+        int verticalPixel = minVertical; //Sets the upper limit to the input provided
+
+        //Before we can start setting the positions, we need to plan out distances
+        //To do that, check how many autons there are (= amount on both screens)
+        int bottomRowCount = autos.size() / 2; //Integer division, truncates
+        int topRowCount = autos.size() - bottomRowCount; //Will always be the rest
+        int ySize = 240 - minVertical;
+
+        int autoni = 0; //Separate index for the autons themselves
+
+        for (int i = 0; i <= topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
+            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this, for regular autons
+            ++autoni; //Indexes this as well
+        }
+
+        horizontalPixel = 0; //Reset before doing bottom row
+        verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
+
+        for (int i = 0; i <= bottomRowCount; ++i) { //Sets up the bottom row after setting it up
+            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this
+            ++autoni; //Indexes this as well
+        }
+
+        int bottomRow = utilAutos.size() / 2; //Figures out how many are needed for the utility bottom
+        int topRow = utilAutos.size() - bottomRow; //And then utility top
+
+        int utili = 0; //New index for the utility
+
+        horizontalPixel = 0; //Resets x position
+        verticalPixel = minVertical; //Resets y counter
+
+        for (int i = 0; i <= topRow; ++i) { //Makes the top row
+            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this for utility
+            ++utili; //Indexes this as well
+        }
+
+        horizontalPixel = 0; //Reset before doing bottom row
+        verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
+
+        for (int i = 0; i <= bottomRow; ++i) { //Bottom row for utility
+            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this
+            ++utili; //Indexes this as well
         }
     }
 
-    void printAutons() {
-        drawImage();
+    int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil, int availableYPixels) { //Sets the input member's position
+        pixel += 4; //Adds 4 for starting offset
+        int leftBound = pixel; //What the left bound is
+        int horizontalDistance = (480 - (totalObjects * 8)) / totalObjects; //*8 is for spacing, then divide for the slide
+        pixel += horizontalDistance; //Moves to the right edge
+        int rightBound = pixel; //Right bound is now the current pixel
+        pixel += 4; //Moves it right 4 again
 
-        pros::delay(10); //Tiny Delay so brain screen can catch up
-        //If it moves on before refresh rate can catch up it doesn't save autons
+        //Vertical Calculations
+        verticalPixel += 4; //Offset
+        int topBound = verticalPixel; //Top is now the current pixel
+        int verticalDistance = (availableYPixels - (8 * 2)) / 2; //2 is row count
+        verticalPixel += verticalDistance; //Slides that distance
+        int bottomBound = verticalPixel; //Creates bottom bound
+        //No need to offset vertical pixel again, since the create menu does that automatically
+        //It shifts the starting y for the bottom group before doing them
 
-        load_previously_saved_auton(); //Loads auton if it can via SD card
-        print(); //Prints the autons to start
+        if (!usingUtil) { //Checks the input boolean for what it should set. If setting the autons
+            currentAuto.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the auto positioning
+        } else { //If setting the utility
+            utilAuto.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the ManagerUtil positioning
+        }
+        return pixel; //Returns pixel so it can stack
     }
 
-    void store() { //Stores selected auton's callback for after termination
-        bool wasSelected = false;
-        for (auto &a : list) { //Stores the current callback for selected function
-            if (a.isSelected()) {
-                storedCallback = a.callbackIs();
-                selectedIsBlue = a.isBlue(); //Updates the seleted color with selected auton
-                wasSelected = true;
-                autonWasSelected = true;
-                a.isSkills() ? skillsSelected = true : skillsSelected = false; //Updates is skills
+    void drawScreen() { //Draws the brain screen based on current ID and what's selected
+        if (terminated) throw 1; //If already terminated, leave early.
+
+        if (getID() == 3) { //If the screen is the utility screen
+
+            bool expected = true; //This is what will make the background redraw, if the lock is == true
+            bool desired = false; //This is what it will set the lock to when it is true (should redraw)
+
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
+                drawBG();
+                pros::delay(10);
+            }
+
+            for (auto &u : utilAutos) { //Goes through every utility Auton
+                textColor = BLACK; //Sets the text color to black
+                color = u.isSelected() ? YELLOW : WHITE; //And the background to yellow if selected and white otherwise
+                u.drawBox(); //Then it draws the auton
+            }
+            //All screens auto-fill in any available space,
+            //So even though the utilities probably will have less
+            //With at least 2 it covers up the old screen when drawing, so no need to redraw background
+
+        } else { //If any other screen
+
+            bool expected = false; //This is what will make the background redraw, if the lock is == false
+            bool desired = true; //This is what it will set the lock to when it is false (should redraw)
+
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
+                drawBG();
+                pros::delay(10);
+            }
+
+            for (auto &a : autos) { //Then it goes through every auton
+                if (screenID == 1) textColor = BLUE; //If the screen is blue, set text to blue
+                if (screenID == 2) textColor = RED; //If the screen is red, set text to red
+            
+                color = a.isSelected() ? YELLOW : BLACK; //Sets background color to yellow if selected, black if not
+                a.drawBox(); //Draws the auton
             }
         }
-
-        if (!wasSelected) {
-            storedCallback = nullptr; //Unintiializes if nothing was selected
-            autonWasSelected = false;
-        }
     }
 
-    void terminateAutons() { //Run after storing
-        terminated = true; //Sets to true
-        list.clear(); //Clear the list that contains autons
-        //Clears storage so it doesn't reprint
-        //Removes them from being able to be touched
-        //They will deconstruct here because they leave scope, using the destructor I made in that class
-        drawBG(); //Rerun Removes all boxes
-    }
+    void load_sd_card_save() { //Reads what's stored in the SD Card to load an auton
+        try { //Attempts to check (if SD card not inserted this will fail, leading to the catch statement)
+            string autonName = savedName(); //Reads the auton name
+            char autonID = savedID(); //Reads the ID of the auton
+            bool normalAutoSelected = false; //Used for checking if it should go to utility
+            for (auto &a : autos) { //For every auton stored
+                a.setSelected(false); //Sets to false automatically
+                if (autonName == a.nameIs()) { //If the name is correct
+                    setID(autonID); //Sets the screen ID to what it should be (color correction)
+                    normalAutoSelected = true; //Sets this to true (so it doesn't go to utility screen)
+                    a.setSelected(true); //Sets the auton to true
+                }
+            }
 
-    bool hasTerminated() const { //Read-only for checking if terminated already
-        return terminated; //Returns state of variable
-    }
+            if (!normalAutoSelected&&autonID == 3) { //If no auton was selected and the auto was a utility auto
+                setID(autonID); //Sets to screen 3
+            }
 
-    void drawBG() {
-        drawImage();
-    }
-
-    bool skills_is_selected() const {
-        return skillsSelected;
-    }
-
-    private:
-
-    bool terminated = false; //False by default | Helper to check if already terminated
-    vector<autons> list; //Vector for the list that contains autons
-    void (*storedCallback)() = nullptr; //Initialized for safety
-    colorManager cMNG{364, 476, 124, 236}; //This creates the color manager cMNG
-    bool autonWasSelected = true; //Starts true because an auton starts selected
-    bool skillsSelected = false;
-
-    int print() { //Function to draw boxes and cMNG using correct color.
-        if (terminated) return 0; //Early exit if already terminated. Makes sure it cannot reprint after termination
-
-        textColor = cMNG.isBlue() ? 0x0000FF : 0xFF0000; //Sets text to blue if blue
-
-        for (const auto &a : list) {
-            color = a.isSelected() ? 0xFFFF00 : 0x000000; //Set color yellow if selected
-            if (a.isSkills()) {
-                a.drawBox(); //Draws if skills regardless of color
-            } else { //If not skills then check color
-                cMNG.isBlue() == a.isBlue() ? (a.drawBox(), 1) : 1; //Draws auton if correct
+            for (auto &u : utilAutos) { //Then it looks through utilAutos
+                u.setSelected(false); //Sets them to false by default
+                if (autonName == u.nameIs()) { //If the correct name
+                    u.setSelected(true); //Set it to true
+                }
             }
         }
-        cMNG.draw(); //Draws color manager (Once)
-
-        return 1;
-    }
-
-    void load_previously_saved_auton() { //Checks and loads save data for autonomous
-        try { //Statement to do this. Exceptions can occur, so try for safety
-            string selected = sdSelectedCheck(); //Creates a shorter name
-            bool selectedBlue = color_auton(); //Runs this once and gives it to the variable
-            for (auto &a : list) { //Goes through every auton
-                if (a.nameIs() == selected && a.isBlue() == selectedBlue)  { //Checks if correct name and color
-                    a.setSelected(true); //Sets to true if fully correct
-                } else a.setSelected(false); //Sets to false otherwise
-            }
-        }
-        catch (int errorCode) { //Handles exceptions
-            switch (errorCode) { //Goes through errorCodes
-                case 1: //If error 1
-                printf("Error opening file. File most likely does not exist"); //Print to terminal why
-                break; //Leave switch
+        catch (int error) { //If an exception is thrown, prevent crashes by using this
+            switch (error) { //Checks the error code
+                case 1: //My error I made
+                printf("Error opening file"); //It prints to the console why
+                break;
                 default: //If not my own error
-                printf("Other unknown error occured"); //Then explain why
-                break; //Leave switch
-            }
-        }
-    }
-
-    void update_saved_auton() { //Saves current auton to SD card for starting selected later
-        try { //Try for safety
-            saveAutonomous(list); //Save it with this function, using list
-        }
-        catch (int code) { //Catch any thrown errors
-            if (code == 2) { //If my own error
-                printf("Couldn't open file"); //Explain why
-            } else printf("Unknown exception received"); //Print anything else
-        }
-    }
-
-    string sdSelectedCheck() { //Reads to check autonLog.txt. Returns what the auton is in a string
-        ifstream selectedAutonomous("autonLog.txt"); //Creates, writes, and reads through selectedAutonomous
-        if (!selectedAutonomous.is_open()) throw 1; //If the file can't open, exit
-        string autonSelected; //Creates output
-        int line = 1; //Line index variable
-        while (getline(selectedAutonomous, autonSelected)) { //Goes through first line
-            if (line == 1) { //Onlt first line contains the name
-                cout<<autonSelected; //Prints current line to autonSelected
-                break; //Exit after reading the first line
-            }
-            ++line; //Index it so it tracks properly
-        }
-        selectedAutonomous.close(); //Close for safety
-        return autonSelected; //End the function
-    }
-
-    bool color_auton() { //A function to check the color of the auton, and correct the color manager
-        ifstream selected("autonLog.txt"); //Opens the file is reading mode
-        if (!selected.is_open()) throw 1; //If it doesn't open, throw exception
-        bool blue; //Boolean for the color
-        string color; //String to store the name of the color
-        int line = 1; //Line index number
-        while (getline(selected, color)) { //Goes through until line 2
-            if (line == 2) { //When line 2
-                cout<<color; //Print current line to color
+                printf("Unknown error handled"); //Prints that to console
                 break;
             }
-            ++line; //Index the line
         }
-        color == "blue" ? blue = true : blue = false; //Sets boolean to the current color
-        if (blue != cMNG.isBlue()) cMNG.toggle(); //If the color manager is wrong correct it
-        selected.close(); //Close the file to save it
-        return blue; //End the function
     }
 
-    void saveAutonomous(vector<autons> autos) { //Saves the selected autonomous to a file for later use
-        ofstream saveFile("autonLog.txt"); //Not opened in appending mode (so it overwrites)
-        if (!saveFile.is_open()) throw 2; //If it would error it throws an exception
-        for (auto &auton : autos) { //Goes through the inputted list
-            if (auton.isSelected()) { //If selected
-                string output = auton.nameIs() + "\n" + (auton.isBlue() ? "blue" : "red"); //Creates a string with the two lines
-                saveFile<<output<<endl; //Save the output to the file.
+    void save_sd_card() { //Saves the current autonomous selected to the SD card
+        try { //Try statement (to prevent crashes)
+            save(); //Tries to save the auton
+        }
+        catch (int error) { //If it errored
+            switch (error) { //Check the error code
+                case 1: //If error code == 1 (my own custom)
+                printf("Error opening file"); //Explain why
+                break;
+                default: //If not my own error
+                printf("Unknown error handled"); //Print it to the console
+                break;
             }
         }
-        saveFile.close(); //Close the file to save it
+    }
+
+    void save() { //Saves the autonomous to the SD card
+        fstream autonFile("autonLog.txt"); //Opens the file
+        if (!autonFile.is_open()) throw 1; //If it isn't open, throw an exception
+        for (auto &a : autos) { //For every auton
+            string outputString = ""; //Create the output string
+            if (a.isSelected()) { //If it is selected
+                outputString += a.nameIs() + "\n"; //Set the name and make a new line
+                if (getID() == 1) { //Then get the screen id
+                    outputString += "1"; //If it is currently blue, add that
+                } else if (getID() == 2) { //Otherwise
+                    outputString += "2"; //If it is currently red, add that
+                }
+                autonFile<<outputString<<endl; //Sets to file
+            }
+        }
+
+        for (auto &u : utilAutos) { //Goes through the utilities
+            string outputString = ""; //Creates the string for the output
+            if (u.isSelected()) { //If the utility is selected
+                outputString += u.nameIs() + "\n" + "3"; //Give it name and utility tag
+                autonFile<<outputString<<endl; //Save it to the file
+            }
+        }
+
+        autonFile.close(); //Closes the file to save it and clean up the output buffer
+    }
+
+    string savedName() { //Returns the name of the saved auton
+        string name = ""; //string to put the name into
+        ifstream autonFile("autonLog.txt"); //Opens the file
+        if (!autonFile.is_open()) throw 1; //If not open, throw an exception
+        int line = 1; //Line counter
+        while (getline(autonFile, name)) { //Goes through every line
+            if (line == 1) { //The name is stored at line 1
+                cout<<name; //Save the line to the string
+                break; //Leave the loop (we got what was wanted)
+            }
+            ++line; //Indexes line after the line check
+        }
+        autonFile.close(); //Closes the file to keep it clean
+        return name; //Returns the fetched name
+    }
+    
+    char savedID() { //Returns the ID of the selected's screen ID
+        char id = 1; //Holds the id, 1 by default
+        ifstream autonFile("autonLog.txt"); //Opens the file
+        if (!autonFile.is_open()) throw 1; //If not open throw exception
+        int line = 1; //Line counter
+        string words; //String to store what the tag is
+        while (getline(autonFile, words)) { //Goes through the file
+            if (line == 2) { //At line 2
+                cout<<words; //Save the tag to the words string
+                break; //Leave the loop
+            }
+            ++line; //Index the line counter
+        }
+        if (words == "1") { //If it the tag is 1
+            id = 1; //Set the id to blue (1)
+        } else if (words == "2") { //If the tag is 2
+            id = 2; //Set the id to red (2)
+        } else { //Otherwise (when it would be 3)
+            id = 3; //Set id to utility (3)
+        }
+        autonFile.close(); //Closes the file to keep it safe
+        return id; //Returns the found id
     }
 };
 
-//autons should not be used to interact with them besides creation
-//Instead use the manager to call things
-//It automatically interacts with autons
-//Safely (interacts with every member)
 
-//If more functionality is needed
-//Add to AutonManager
-//So it maintains the authority
-//Use add to add autons.
-//Can be defined beforehand.
-
-//Also:
-//Come up with formula that takes in what autons you want
-//Plus their name and callback
-//And auto figure out pixel requirements
-//Can be split into two rows for easier code writing.
-
-//Not immediately needed but an option for the future
-
-#endif // End of file
+#endif //End directive
