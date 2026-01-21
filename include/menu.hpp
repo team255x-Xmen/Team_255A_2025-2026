@@ -8,16 +8,15 @@
 #include "iostream" //I/O stream
 
 
-//Goal of this file:
+//Goal of this major revision:
 //Redo the menu with 3 sections (red, blue, utility)
 //Plus calculations for autons, so all I have to do
 //Is create the autons class with a string and two callbacks
 
 //Apparently this idea of an auton selector can also be done using
-//pros::lcd. But I don't know how that works now. I'll look into it later.
-//This file still remains to be tested though. To test, copy + paste it to menu.hpp
-//And then fix it where it needs to be fixed (autons declaration and stuff)
-//This file is designed to fit nearly perfectly with the current menu infrastructure (just adjust constructors for autons and stuff)
+//pros::lcd. But I don't know how that works right now. I'll look into it later.
+//This file has been tested with one exception. It has not been tested in the autonomous phase yet
+//I will need to test out and make sure the callbacks work as expected, although that should be quick and easy
 
 struct brainPosition { //Struct to group the bounds of pixels into one name
     int left; //The left bound
@@ -33,7 +32,7 @@ struct brainPosition { //Struct to group the bounds of pixels into one name
 #define BLACK 0x000000 //Abbreviates black to its hexadecimal number
 #define BLUE 0x0000FF //Abbreviates blue to its hexadecimal number
 #define RED 0xFF0000 //Abbreviates red to its hexadecimal number
-#define YELLOW 0x00FFFF //Abbreviates yellow to its hexadecimal number
+#define YELLOW 0xFFFF00 //Abbreviates yellow to its hexadecimal number
 #define WHITE 0xFFFFFF //Abbreviates white to its hexadecimal number
 //This makes it easier to read later
 
@@ -201,7 +200,7 @@ class AutonManager {
             utilAutos.push_back(autos); //And stores them
         }
 
-        for (int i = 0; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
+        for (int i = 1; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
             string name = ""; //Empty string for the name
             if (i == 1) name = "Blue"; //Blue has ID of 1
             if (i == 2) name = "Red"; //Red has ID of 2
@@ -214,20 +213,10 @@ class AutonManager {
 
         drawBG(); //Draws the background (Bottom Layer)
 
-        pros::delay(10); //Waits so brain can catch up
-
-        pros::screen::set_pen(BLACK); //Sets pen to black
-        pros::screen::fill_rect(0, 0, 480, utilities[0].bottomPos()); //Draws box at the top of the screen
-
-        for (auto &u : utilities) { //This draws the utilities
-            if (u.getID() == 1) textColor = BLUE; //If blue, set text to blue
-            if (u.getID() == 2) textColor = RED; //If red, set text to red
-            if (u.getID() == 3) textColor = BLACK; //If utility, set text to black
-            color = WHITE; //Background color is white
-            u.drawBox(); //Draws the utility box
-        } //They get drawn once
+        pros::delay(20); //Waits so brain can catch up
 
         load_sd_card_save(); //Loads the SD card (sets something to true)
+        drawUtilBar(); //Draws utility bar from the function it's stored in
         drawScreen(); //Draws the screen after trying to load
         isInit = true; //Updates the initialized value to true when done all of this
     }
@@ -396,15 +385,15 @@ class AutonManager {
 
         int autoni = 0; //Separate index for the autons themselves
 
-        for (int i = 0; i <= topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
+        for (int i = 0; i < topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
             horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this, for regular autons
             ++autoni; //Indexes this as well
         }
 
         horizontalPixel = 0; //Reset before doing bottom row
-        verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
+        verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
 
-        for (int i = 0; i <= bottomRowCount; ++i) { //Sets up the bottom row after setting it up
+        for (int i = 0; i < bottomRowCount; ++i) { //Sets up the bottom row after setting it up
             horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this
             ++autoni; //Indexes this as well
         }
@@ -417,15 +406,15 @@ class AutonManager {
         horizontalPixel = 0; //Resets x position
         verticalPixel = minVertical; //Resets y counter
 
-        for (int i = 0; i <= topRow; ++i) { //Makes the top row
+        for (int i = 0; i < topRow; ++i) { //Makes the top row
             horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this for utility
             ++utili; //Indexes this as well
         }
 
         horizontalPixel = 0; //Reset before doing bottom row
-        verticalPixel = (240 - minVertical) / 2; //Moves this to the middle
+        verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
 
-        for (int i = 0; i <= bottomRow; ++i) { //Bottom row for utility
+        for (int i = 0; i < bottomRow; ++i) { //Bottom row for utility
             horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this
             ++utili; //Indexes this as well
         }
@@ -464,13 +453,14 @@ class AutonManager {
             bool expected = true; //This is what will make the background redraw, if the lock is == true
             bool desired = false; //This is what it will set the lock to when it is true (should redraw)
 
-            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
-                drawBG();
-                pros::delay(10);
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //This checks if it is true, and if so, sets it to false
+                drawBG(); //Then if it was the expected value, draw the background
+                pros::delay(20); //Delay
+                drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
             }
 
             for (auto &u : utilAutos) { //Goes through every utility Auton
-                textColor = BLACK; //Sets the text color to black
+                textColor = WHITE; //Sets the text color to black
                 color = u.isSelected() ? YELLOW : WHITE; //And the background to yellow if selected and white otherwise
                 u.drawBox(); //Then it draws the auton
             }
@@ -483,10 +473,11 @@ class AutonManager {
             bool expected = false; //This is what will make the background redraw, if the lock is == false
             bool desired = true; //This is what it will set the lock to when it is false (should redraw)
 
-            if (bgRedrawLock.compare_exchange_strong(expected, desired)) {
-                drawBG();
-                pros::delay(10);
-            }
+            if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //For the same reason as explained above
+                drawBG(); //Draws background
+                pros::delay(20); //Refresh delay
+                drawUtilBar(); //Redraw utility bar
+            } //This is the opposite of what is used for the utility check
 
             for (auto &a : autos) { //Then it goes through every auton
                 if (screenID == 1) textColor = BLUE; //If the screen is blue, set text to blue
@@ -496,6 +487,19 @@ class AutonManager {
                 a.drawBox(); //Draws the auton
             }
         }
+    }
+
+    void drawUtilBar() { //Draws the utility bar to the screen
+        pros::screen::set_pen(BLACK); //Sets pen to black
+        pros::screen::fill_rect(0, 0, 480, utilities[0].bottomPos()); //Draws box at the top of the screen
+
+        for (auto &u : utilities) { //This draws the utilities
+            if (u.getID() == 1) textColor = BLUE; //If blue, set text to blue
+            if (u.getID() == 2) textColor = RED; //If red, set text to red
+            if (u.getID() == 3) textColor = WHITE; //If utility, set text to black
+            color = WHITE; //Background color is white
+            u.drawBox(); //Draws the utility box
+        } //They get drawn once
     }
 
     void load_sd_card_save() { //Reads what's stored in the SD Card to load an auton
@@ -519,6 +523,7 @@ class AutonManager {
             for (auto &u : utilAutos) { //Then it looks through utilAutos
                 u.setSelected(false); //Sets them to false by default
                 if (autonName == u.nameIs()) { //If the correct name
+                    bgRedrawLock.store(!bgRedrawLock.load()); //This makes the lock default to what it should be, correcting an issue
                     u.setSelected(true); //Set it to true
                 }
             }
@@ -552,7 +557,7 @@ class AutonManager {
     }
 
     void save() { //Saves the autonomous to the SD card
-        fstream autonFile("autonLog.txt"); //Opens the file
+        ofstream autonFile("autonLog.txt"); //Opens the file (ofstream also creates the file)
         if (!autonFile.is_open()) throw 1; //If it isn't open, throw an exception
         for (auto &a : autos) { //For every auton
             string outputString = ""; //Create the output string

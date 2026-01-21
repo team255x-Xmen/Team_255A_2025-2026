@@ -101,47 +101,36 @@ void initialize() {
 
 
   //Autons
-    //name, left bound, right bound, top bound, bottom bound, callback
-    //Keep width 114 pixels or less
-    //Height should be 112 pixels or less
-  //480x240 pixels is brain screen size. 4 pixel buffer
+    //name, blue callback, red callback, (overload) start_selected;
+  //The manager switches between the callbacks as necessary
+  //The manager also auto-configures sizing, so no need to worry about it anymore
 
   std::vector<autons> autonPrograms; //Vector to store the autons
   //This will reduce how much code I need to add, and abstracts it
-  std::vector<utilAutons> utilityAutons;
+  std::vector<utilAutons> utilityAutons; //Another vector for utility autons
 
-  //Blue
-
-  //First Row
   autonPrograms.push_back(autons("L Simple", simpleLeftSideB, simpleLeftSideR, true)); //Each gets
-  autonPrograms.push_back(autons("R Simple", simpleRightSideB, simpleRightSideR));    //added to the vector
-  autonPrograms.push_back(autons("L Descore", LeftDescoreB, LeftDescoreR));           //with all the qualities
+  autonPrograms.push_back(autons("R Simple", simpleRightSideB, simpleRightSideR));     //added to the vector
+  autonPrograms.push_back(autons("L Descore", LeftDescoreB, LeftDescoreR));            //with all the qualities
   autonPrograms.push_back(autons("R Descore", RightDescoreB, RightDescoreR));          //So later the vector
-
-  //Second Row
-  autonPrograms.push_back(autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR));    //Can just be run through
-  autonPrograms.push_back(autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR)); //And reduce lines
-
+  autonPrograms.push_back(autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR));               //Can just be run copied
+  autonPrograms.push_back(autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR));             //And reduce lines
   
 
-  //Skills
+  //Utilities
   utilityAutons.push_back(utilAutons("Skills", skillsAuton, true)); //And stop me from forgetting stuff
-  utilityAutons.push_back(utilAutons("Simple Drive", basicDrive));
-  //Booleans: Is blue (not important), doesn't start selected, and is skills
+  utilityAutons.push_back(utilAutons("Simple Drive", basicDrive)); //The vectors get auto added when initializing
+  //For utilities (single callback autons) they go:
+    //name, callback, (overload) is_skills;
+  //They are for single callback autons, and get put into the utilities section
 
   //Initialization
 
   // Initialize chassis
   chassis.initialize();
-
-  //Color manager initialized in the manager class
-
-  //Adding autons to manager
-
-  Kerry.initialize(autonPrograms, utilityAutons, 40); //Adds the autons
-
-
   
+  //Initializes the manager with the input autons, input utilities, and utility bar vertical size (in pixels)
+  Kerry.initialize(autonPrograms, utilityAutons, 40); //Adds the autons
   pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
   //At some point add in a color sorter and run the task here (so it runs globally)
