@@ -56,10 +56,12 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
         pros::screen::set_pen(color); //Yellow
         pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
         pros::screen::set_pen(textColor); //Blue
-        if (pos.bottom - pos.top < 50 || pos.right - pos.left < 100) { //If it is too small for medium, print in small
+        if (pos.bottom - pos.top < 50|| pos.right - pos.left < 100) { //If it is too small for medium, print in small
             pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
-        } else { //When big enough print in medium
+        } else if (pos.bottom - pos.top < 100||pos.right - pos.left < 200) { //When big enough print in medium
             pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+        } else { //When really big enough print in large
+            pros::screen::print(pros::E_TEXT_LARGE, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
         }
     }
 
@@ -193,7 +195,7 @@ extern bool selectedIsBlue;
 class AutonManager {
     public:
     
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight) { //Initializes the manager
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight, int autonRowCount) { //Initializes the manager
         if (isInit) return; //Leaves early if already initialized
 
         for (auto list : autonomousRoutines) { //Takes the vector provided
@@ -213,7 +215,7 @@ class AutonManager {
         }
 
         setupUtil(utilityHeight); //Sets the utility bar with input pixels of height
-        setupMenu(utilities[0].bottomPos()); //Sets up the autons starting at the utility bottom position
+        setupMenu(utilities[0].bottomPos(), autonRowCount); //Sets up the autons starting at the utility bottom position
 
         drawBG(); //Draws the background (Bottom Layer)
 
@@ -239,6 +241,8 @@ class AutonManager {
             if (u.containsPoint(x, y)) setID(u.getID()); //Updates ID if it should
         }
 
+        isSkills = false; //Always starts false so on util screen it can set it, and it stays updated
+
         if (screenID != 3) { //If not 3 (utility screen)
             for (auto &u : utilAutos) { //Set all utilities to false
                 u.setSelected(false); //Sets to false
@@ -253,12 +257,10 @@ class AutonManager {
                 a.setSelected(false); //Does that
             }
 
-            bool skillsActivated = false;
             for (auto &u : utilAutos) { //Check the utilities for touch
                 u.setSelected(u.containsPoint(x, y)); //Checks them
 
-                if (u.is_skills()&&u.isSelected()) {isSkills = true; skillsActivated = true;} //If the selected is skills update boolean
-                else if (!skillsActivated) isSkills = false; //Otherwise set it to false
+                if (u.is_skills()&&u.isSelected()) isSkills = true; //If it is skills set it to true
             }
 
         }
@@ -376,7 +378,7 @@ class AutonManager {
         } //It does this for every utility
     }
 
-    void setupMenu(int minVertical) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
+    void setupMenu(int minVertical, int vrows) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
         //Assume 2 rows per screen
         //3 screens in total (red, blue, ManagerUtil)
         int horizontalPixel = 0; //Starts at left edge
@@ -391,7 +393,7 @@ class AutonManager {
         int autoni = 0; //Separate index for the autons themselves
 
         for (int i = 0; i < topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
-            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this, for regular autons
+            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows); //Runs this, for regular autons
             ++autoni; //Indexes this as well
         }
 
@@ -399,7 +401,7 @@ class AutonManager {
         verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
 
         for (int i = 0; i < bottomRowCount; ++i) { //Sets up the bottom row after setting it up
-            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize); //Runs this
+            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows); //Runs this
             ++autoni; //Indexes this as well
         }
 
@@ -412,7 +414,7 @@ class AutonManager {
         verticalPixel = minVertical; //Resets y counter
 
         for (int i = 0; i < topRow; ++i) { //Makes the top row
-            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this for utility
+            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize, vrows); //Runs this for utility
             ++utili; //Indexes this as well
         }
 
@@ -420,12 +422,12 @@ class AutonManager {
         verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
 
         for (int i = 0; i < bottomRow; ++i) { //Bottom row for utility
-            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize); //Runs this
+            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize, vrows); //Runs this
             ++utili; //Indexes this as well
         }
     }
 
-    int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil, int availableYPixels) { //Sets the input member's position
+    int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil, int availableYPixels, int vertRows) { //Sets the input member's position
         pixel += 4; //Adds 4 for starting offset
         int leftBound = pixel; //What the left bound is
         int horizontalDistance = (480 - (totalObjects * 8)) / totalObjects; //*8 is for spacing, then divide for the slide
@@ -436,7 +438,7 @@ class AutonManager {
         //Vertical Calculations
         verticalPixel += 4; //Offset
         int topBound = verticalPixel; //Top is now the current pixel
-        int verticalDistance = (availableYPixels - (8 * 2)) / 2; //2 is row count
+        int verticalDistance = (availableYPixels - (8 * vertRows)) / vertRows; //Decides based on rows wanted
         verticalPixel += verticalDistance; //Slides that distance
         int bottomBound = verticalPixel; //Creates bottom bound
         //No need to offset vertical pixel again, since the create menu does that automatically
@@ -459,7 +461,7 @@ class AutonManager {
             bool desired = false; //This is what it will set the lock to when it is true (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //This checks if it is true, and if so, sets it to false
-                if (autos.size() != utilAutos.size()) {
+                if (utilAutos.size() > autos.size()) {
                     drawBG(); //Then if it was the expected value, draw the background
                     pros::delay(20); //Delay
                     drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
@@ -481,7 +483,7 @@ class AutonManager {
             bool desired = true; //This is what it will set the lock to when it is false (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //For the same reason as explained above
-                if (autos.size() != utilAutos.size()) {
+                if (autos.size() > utilAutos.size()) {
                     drawBG(); //Draws background
                     pros::delay(20); //Refresh delay
                     drawUtilBar(); //Redraw utility bar
@@ -512,26 +514,22 @@ class AutonManager {
         try { //Attempts to check (if SD card not inserted this will fail, leading to the catch statement)
             string autonName = savedName(); //Reads the auton name
             char autonID = savedID(); //Reads the ID of the auton
-            bool normalAutoSelected = false; //Used for checking if it should go to utility
-            for (auto &a : autos) { //For every auton stored
-                a.setSelected(false); //Sets to false automatically
-                if (autonName == a.nameIs()) { //If the name is correct
-                    setID(autonID); //Sets the screen ID to what it should be (color correction)
-                    normalAutoSelected = true; //Sets this to true (so it doesn't go to utility screen)
-                    a.setSelected(true); //Sets the auton to true
-                }
-            }
 
-            if (!normalAutoSelected&&autonID == 3) { //If no auton was selected and the auto was a utility auto
-                setID(autonID); //Sets to screen 3
+            autoIsSelected = false; //Sets it to false by default
+
+            setID(autonID); //Sets the screen ID so if nothing is selected the current screen is saved
+
+            for (auto &a : autos) { //For every auton stored
+                autonName == a.nameIs() ? a.setSelected(true) : a.setSelected(false);
+                a.isSelected() ? autoIsSelected = true : 1; //If auto is selected, tell manager an auto is selected
             }
 
             for (auto &u : utilAutos) { //Then it looks through utilAutos
-                u.setSelected(false); //Sets them to false by default
                 if (autonName == u.nameIs()) { //If the correct name
                     bgRedrawLock.store(!bgRedrawLock.load()); //This makes the lock default to what it should be, correcting an issue
                     u.setSelected(true); //Set it to true
-                }
+                    autoIsSelected = true; //Tells manager an auto is selected
+                } else u.setSelected(false); //If not right auton set it to false
             }
         }
         catch (int error) { //If an exception is thrown, prevent crashes by using this
@@ -565,27 +563,20 @@ class AutonManager {
     void save() { //Saves the autonomous to the SD card
         ofstream autonFile("autonLog.txt"); //Opens the file (ofstream also creates the file)
         if (!autonFile.is_open()) throw 1; //If it isn't open, throw an exception
+        string outputString = "\n" + custom::num::convert<char>(getID()); //Sets it to the screen ID by default
         for (auto &a : autos) { //For every auton
-            string outputString = ""; //Create the output string
             if (a.isSelected()) { //If it is selected
-                outputString += a.nameIs() + "\n"; //Set the name and make a new line
-                if (getID() == 1) { //Then get the screen id
-                    outputString += "1"; //If it is currently blue, add that
-                } else if (getID() == 2) { //Otherwise
-                    outputString += "2"; //If it is currently red, add that
-                }
-                autonFile<<outputString<<endl; //Sets to file
+                outputString = a.nameIs() + "\n" + custom::num::convert<char>(getID()); //Set the name, make a new line, add ID
             }
         }
 
         for (auto &u : utilAutos) { //Goes through the utilities
-            string outputString = ""; //Creates the string for the output
             if (u.isSelected()) { //If the utility is selected
-                outputString += u.nameIs() + "\n" + "3"; //Give it name and utility tag
-                autonFile<<outputString<<endl; //Save it to the file
+                outputString = u.nameIs() + "\n3"; //Give it name and utility tag
             }
         }
 
+        autonFile<<outputString<<endl; //Saves end result to the file
         autonFile.close(); //Closes the file to save it and clean up the output buffer
     }
 
