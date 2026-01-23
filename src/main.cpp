@@ -12,9 +12,9 @@ AutonManager Kerry; //Creates the manager, named Kerry
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
-    {4, -14, 7},  // Right Chassis Ports (negative port will reverse it!)
+    {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
 
-    10,      // IMU Port
+    7,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
@@ -23,7 +23,7 @@ ez::Drive chassis(
 //  - you should get positive values on the encoders going FORWARD and RIGHT0
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
-ez::tracking_wheel horiz_tracker(6, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
+ez::tracking_wheel horiz_tracker(8, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
 bool selectorEnable = true; //The boolean to enable/disable the selector task

@@ -56,7 +56,11 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
         pros::screen::set_pen(color); //Yellow
         pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
         pros::screen::set_pen(textColor); //Blue
-        pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+        if (pos.bottom - pos.top < 50 || pos.right - pos.left < 100) { //If it is too small for medium, print in small
+            pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+        } else { //When big enough print in medium
+            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+        }
     }
 
     void setPosition(int left, int right, int top, int bottom) { //Sets the member's position to the inputted numberds
@@ -219,6 +223,7 @@ class AutonManager {
         drawUtilBar(); //Draws utility bar from the function it's stored in
         drawScreen(); //Draws the screen after trying to load
         isInit = true; //Updates the initialized value to true when done all of this
+        terminated = false; //Resets termination check
     }
 
     char getID() const { //Returns the current screen ID
@@ -494,13 +499,10 @@ class AutonManager {
     }
 
     void drawUtilBar() { //Draws the utility bar to the screen
-        pros::screen::set_pen(BLACK); //Sets pen to black
-        pros::screen::fill_rect(0, 0, 480, utilities[0].bottomPos()); //Draws box at the top of the screen
-
         for (auto &u : utilities) { //This draws the utilities
             if (u.getID() == 1) textColor = BLUE; //If blue, set text to blue
             if (u.getID() == 2) textColor = RED; //If red, set text to red
-            if (u.getID() == 3) textColor = WHITE; //If utility, set text to black
+            if (u.getID() == 3) textColor = WHITE; //If utility, set text to white
             color = WHITE; //Background color is white
             u.drawBox(); //Draws the utility box
         } //They get drawn once
