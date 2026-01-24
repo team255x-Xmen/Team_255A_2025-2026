@@ -379,6 +379,36 @@ class AutonManager {
     }
 
     void setupMenu(int minVertical, int vrows) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
+
+        auto calculateRows = [vrows] (size_t inputSize, vector<int>& output) {
+
+            int totalCounter = 0;
+            int overflow = inputSize % vrows;
+            atomic<bool> overflowDelay{true};
+
+            for (int i = 1; i <= vrows; i++) {
+                if (i == 1) {
+                    output.push_back(inputSize / vrows);
+                } else if (i != vrows) {
+                    if (overflow > 1) {
+                        if (!overflowDelay.exchange(false)&&vrows > 3) {
+                            output.push_back((inputSize / vrows) + 1);
+                            --overflow;
+                        } else output.push_back(inputSize / vrows);
+                    } else output.push_back(inputSize / vrows);
+                } else {
+                    output.push_back(inputSize - totalCounter);
+                }
+                totalCounter += output[i - 1];
+            }
+        };
+
+        vector<int> autoRowCounts;
+        vector<int> utilRowCounts;
+        
+        calculateRows(autos.size(), autoRowCounts);
+        calculateRows(utilAutos.size(), utilRowCounts);
+
         //Assume 2 rows per screen
         //3 screens in total (red, blue, ManagerUtil)
         int horizontalPixel = 0; //Starts at left edge
@@ -392,38 +422,27 @@ class AutonManager {
 
         int autoni = 0; //Separate index for the autons themselves
 
-        for (int i = 0; i < topRowCount; ++i) { //Sets up the top row using my function (arguments explained later)
-            horizontalPixel = setPosition(horizontalPixel, topRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows); //Runs this, for regular autons
-            ++autoni; //Indexes this as well
+        for (int i = autoRowCounts.size() - 1; i >= 0; i--) {
+            for (int j = 1; j <= autoRowCounts[i]; j++) {
+                horizontalPixel = setPosition(horizontalPixel, autoRowCounts[i], autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows);
+                ++autoni;
+            }
+
+            horizontalPixel = 0;
+            verticalPixel += (240 - minVertical) / vrows;
         }
 
-        horizontalPixel = 0; //Reset before doing bottom row
-        verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
+        verticalPixel = minVertical;
+        autoni = 0;
 
-        for (int i = 0; i < bottomRowCount; ++i) { //Sets up the bottom row after setting it up
-            horizontalPixel = setPosition(horizontalPixel, bottomRowCount, autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows); //Runs this
-            ++autoni; //Indexes this as well
-        }
+        for (int i = utilRowCounts.size() - 1; i >= 0; i--) {
+            for (int j = 1; j <= utilRowCounts[i]; j++) {
+                horizontalPixel = setPosition(horizontalPixel, utilRowCounts[i], autos[0], verticalPixel, utilAutos[autoni], true, ySize, vrows);
+                ++autoni;
+            }
 
-        int bottomRow = utilAutos.size() / 2; //Figures out how many are needed for the utility bottom
-        int topRow = utilAutos.size() - bottomRow; //And then utility top
-
-        int utili = 0; //New index for the utility
-
-        horizontalPixel = 0; //Resets x position
-        verticalPixel = minVertical; //Resets y counter
-
-        for (int i = 0; i < topRow; ++i) { //Makes the top row
-            horizontalPixel = setPosition(horizontalPixel, topRow, autos[0], verticalPixel, utilAutos[utili], true, ySize, vrows); //Runs this for utility
-            ++utili; //Indexes this as well
-        }
-
-        horizontalPixel = 0; //Reset before doing bottom row
-        verticalPixel = (240 + minVertical) / 2; //Moves this to the middle
-
-        for (int i = 0; i < bottomRow; ++i) { //Bottom row for utility
-            horizontalPixel = setPosition(horizontalPixel, bottomRow, autos[0], verticalPixel, utilAutos[utili], true, ySize, vrows); //Runs this
-            ++utili; //Indexes this as well
+            horizontalPixel = 0;
+            verticalPixel += (240 - minVertical) / vrows;
         }
     }
 
