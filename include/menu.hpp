@@ -57,11 +57,11 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
         pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
         pros::screen::set_pen(textColor); //Blue
         if (pos.bottom - pos.top < 50|| pos.right - pos.left < 100) { //If it is too small for medium, print in small
-            pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+            pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
         } else if (pos.bottom - pos.top < 100||pos.right - pos.left < 200) { //When big enough print in medium
-            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
         } else { //When really big enough print in large
-            pros::screen::print(pros::E_TEXT_LARGE, (pos.left + 8), ((pos.top + pos.bottom)/2), name.c_str()); //Provides the name
+            pros::screen::print(pros::E_TEXT_LARGE, (pos.left + 8), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
         }
     }
 
@@ -195,37 +195,32 @@ extern bool selectedIsBlue;
 class AutonManager {
     public:
     
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight, int autonRowCount) { //Initializes the manager
-        if (isInit) return; //Leaves early if already initialized
+    /*
+     * Default Function for initializing manager.
+     * - Has input of 2 vectors
+     * - Defaults util bar height to 40 pixels
+     * - Defaults row count to 2 rows
+    */
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons) {
+        managerInit(autonomousRoutines, specialAutons, 40, 2);
+    }
 
-        for (auto list : autonomousRoutines) { //Takes the vector provided
-            autos.push_back(list); //And stores it
-        }
+    /*
+     * Alternative Overload for initializing manager
+     * - Has input of two vectors, and an integer for row count
+     * - Utility Bar height defaults to 40 pixels
+    */
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int autonRowCount) {
+        managerInit(autonomousRoutines, specialAutons, 40, autonRowCount);
+    }
 
-        for (auto autos : specialAutons) { //Takes the utility autons
-            utilAutos.push_back(autos); //And stores them
-        }
-
-        for (int i = 1; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
-            string name = ""; //Empty string for the name
-            if (i == 1) name = "Blue"; //Blue has ID of 1
-            if (i == 2) name = "Red"; //Red has ID of 2
-            if (i == 3) name = "Utility"; //Utility has ID of 3
-            utilities.push_back(ManagerUtil(name, i)); //Adds them to utility
-        }
-
-        setupUtil(utilityHeight); //Sets the utility bar with input pixels of height
-        setupMenu(utilities[0].bottomPos(), autonRowCount); //Sets up the autons starting at the utility bottom position
-
-        drawBG(); //Draws the background (Bottom Layer)
-
-        pros::delay(20); //Waits so brain can catch up
-
-        load_sd_card_save(); //Loads the SD card (sets something to true)
-        drawUtilBar(); //Draws utility bar from the function it's stored in
-        drawScreen(); //Draws the screen after trying to load
-        isInit = true; //Updates the initialized value to true when done all of this
-        terminated = false; //Resets termination check
+    /*
+     * Fully custom alternative overload for initializing manager
+     * - Input of 2 vectors, utility height, and row count
+     * - Allows for fully custom auton selector
+    */
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int autonRowCount, int utilityHeight) {
+        managerInit(autonomousRoutines, specialAutons, utilityHeight, autonRowCount); //Inits with custom parameters
     }
 
     char getID() const { //Returns the current screen ID
@@ -358,10 +353,43 @@ class AutonManager {
     void (*storedCallback)() = nullptr; //The callback storage
     bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
     bool terminated = false; //Tracker for if termination has occured
-    vector<utilAutons> utilAutos; //Vector for the autons on the ManagerUtil screen
+    vector<utilAutons> utilAutos; //Vector for the autons on the util screen
     bool isSkills = false; //Boolean to store if selected auton is skills
     bool isInit = false; //Boolean to store if the manager has been initialized
     atomic<bool> bgRedrawLock{true};
+
+    void managerInit(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight, int autonRowCount) { //Initializes the manager
+        if (isInit) return; //Leaves early if already initialized
+
+        for (auto list : autonomousRoutines) { //Takes the vector provided
+            autos.push_back(list); //And stores it
+        }
+
+        for (auto autos : specialAutons) { //Takes the utility autons
+            utilAutos.push_back(autos); //And stores them
+        }
+
+        for (int i = 1; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
+            string name = ""; //Empty string for the name
+            if (i == 1) name = "Blue"; //Blue has ID of 1
+            if (i == 2) name = "Red"; //Red has ID of 2
+            if (i == 3) name = "Utility"; //Utility has ID of 3
+            utilities.push_back(ManagerUtil(name, i)); //Adds them to utility
+        }
+
+        setupUtil(utilityHeight); //Sets the utility bar with input pixels of height
+        setupMenu(utilities[0].bottomPos(), autonRowCount); //Sets up the autons starting at the utility bottom position
+
+        drawBG(); //Draws the background (Bottom Layer)
+
+        pros::delay(20); //Waits so brain can catch up
+
+        load_sd_card_save(); //Loads the SD card (sets something to true)
+        drawUtilBar(); //Draws utility bar from the function it's stored in
+        drawScreen(); //Draws the screen after trying to load
+        isInit = true; //Updates the initialized value to true when done all of this
+        terminated = false; //Resets termination check
+    }
 
     void setupUtil(int height) { //Sets up the utility buttons, based on input height
         int xPixel = 0; //Starting xPixel
@@ -380,37 +408,52 @@ class AutonManager {
 
     void setupMenu(int minVertical, int vrows) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
 
-        auto calculateRows = [vrows] (size_t inputSize, vector<int>& output) {
+        if (vrows < 1) { //This prevents divide by 0 errors and negative row counts (not possible)
+            vrows = 1; //Brings to 1 if it is out of sizing
+        }
 
-            int totalCounter = 0;
-            int overflow = inputSize % vrows;
-            atomic<bool> overflowDelay{true};
+        auto calculateRows = [&vrows] (size_t inputSize, vector<int>& output) { //Lambda to calculate rows and store them in inputted vector
 
-            for (int i = 1; i <= vrows; i++) {
-                if (i == 1) {
-                    output.push_back(inputSize / vrows);
-                } else if (i != vrows) {
-                    if (overflow > 1) {
-                        if (!overflowDelay.exchange(false)&&vrows > 3) {
-                            output.push_back((inputSize / vrows) + 1);
-                            --overflow;
-                        } else output.push_back(inputSize / vrows);
-                    } else output.push_back(inputSize / vrows);
-                } else {
-                    output.push_back(inputSize - totalCounter);
-                }
-                totalCounter += output[i - 1];
+            int totalCounter = 0; //Counter for how many total autons have been placed into rows
+
+            int vrowsRestore = vrows; //The temporary variable to store vrows (so it can adapt and work across multiple calls)
+            while (vrows > inputSize) { //When too many rows compared to autons needed to place
+                --vrows; //Reduce rows until the autons and the rows are equal
             }
+
+            int overflow = inputSize % vrows; //Variable to store over flow (when uneven compared to row count, returns remainder)
+            atomic<bool> overflowDelay{true}; //An atomic to reduce lines used (vs bool) and to act as a lock
+            int basicNum = inputSize / vrows; //The basic unmodified number for each row (overflow adds to this to get every auton)
+
+            for (int i = 1; i <= vrows; i++) { //For loop to save how many autons go in each row (first row is bottom, last is top)
+                if (i == 1) { //If first auton (will be last to get new auton)
+                    output.push_back(basicNum); //Add the basic number
+                } else if (i != vrows) { //If not the final row yet
+                    if (overflow > 1&&(!overflowDelay.exchange(false)&&vrows > 3)) { //As long as overflow is not 1
+                        //Final overflow will go to the last row. And if it is big enough to delay (and hasn't delayed)
+                        output.push_back(basicNum + 1); //Add an overflow
+                        --overflow; //And decrement overflow. I delay so it stacks upwards (example below)
+                        //It moves the overflow up 1 in the "stack" changing how it works.
+                        //Because of this for 4 rows (6 autons) it goes
+                        // 1 2 1 2  ->  1 1 2 2         (This looks cleaner)
+                    } else output.push_back(basicNum); //If overflow is at limit (saved for last one) add usual number
+                } else { //When it is the last row
+                    output.push_back(inputSize - totalCounter); //Add the remaining autons needed to the last row
+                }
+                totalCounter += output[i - 1]; //After each loop this gets updated with last addition, so that the final is correct
+            }
+
+            vrows = vrowsRestore; //Restores the vrow to what it was.
         };
 
-        vector<int> autoRowCounts;
-        vector<int> utilRowCounts;
+        vector<int> autoRowCounts; //Vector to store how many autonomous rows are used (also has amount of autons per row)
+        vector<int> utilRowCounts; //Vector to store amount of autons per row
         
-        calculateRows(autos.size(), autoRowCounts);
-        calculateRows(utilAutos.size(), utilRowCounts);
+        calculateRows(autos.size(), autoRowCounts); //Calculates the rows for the autons
+        calculateRows(utilAutos.size(), utilRowCounts); //Calculates the rows for the utility autons
 
         //Assume 2 rows per screen
-        //3 screens in total (red, blue, ManagerUtil)
+        //3 screens in total (red, blue, util)
         int horizontalPixel = 0; //Starts at left edge
         int verticalPixel = minVertical; //Sets the upper limit to the input provided
 
@@ -418,31 +461,31 @@ class AutonManager {
         //To do that, check how many autons there are (= amount on both screens)
         int bottomRowCount = autos.size() / 2; //Integer division, truncates
         int topRowCount = autos.size() - bottomRowCount; //Will always be the rest
-        int ySize = 240 - minVertical;
+        int ySize = 240 - minVertical; //Starting position of y tracker
 
         int autoni = 0; //Separate index for the autons themselves
 
-        for (int i = autoRowCounts.size() - 1; i >= 0; i--) {
-            for (int j = 1; j <= autoRowCounts[i]; j++) {
+        for (int i = autoRowCounts.size() - 1; i >= 0; i--) { //For loop for every row (first row is last in storage)
+            for (int j = 1; j <= autoRowCounts[i]; j++) { //In every row, for amount of autons there should be, set their position
                 horizontalPixel = setPosition(horizontalPixel, autoRowCounts[i], autos[autoni], verticalPixel, utilAutos[0], false, ySize, vrows);
-                ++autoni;
+                ++autoni; //Iterates autonomous index
             }
 
-            horizontalPixel = 0;
-            verticalPixel += (240 - minVertical) / vrows;
+            horizontalPixel = 0; //Resets the horizontal pixel after each row
+            verticalPixel += (240 - minVertical) / vrows; //Moves y pixel after each row
         }
 
-        verticalPixel = minVertical;
-        autoni = 0;
+        verticalPixel = minVertical; //For the utility row, reset the y position
+        autoni = 0; //And reset the auton index
 
-        for (int i = utilRowCounts.size() - 1; i >= 0; i--) {
-            for (int j = 1; j <= utilRowCounts[i]; j++) {
+        for (int i = utilRowCounts.size() - 1; i >= 0; i--) { //For loop for every row (first is last in storage, so counts down)
+            for (int j = 1; j <= utilRowCounts[i]; j++) { //Nested for loop for autons on each row
                 horizontalPixel = setPosition(horizontalPixel, utilRowCounts[i], autos[0], verticalPixel, utilAutos[autoni], true, ySize, vrows);
-                ++autoni;
+                ++autoni; //Increments auton index
             }
 
-            horizontalPixel = 0;
-            verticalPixel += (240 - minVertical) / vrows;
+            horizontalPixel = 0; //Resets x position after each row
+            verticalPixel += (240 - minVertical) / vrows; //Moves y pixel after each row
         }
     }
 
@@ -466,7 +509,7 @@ class AutonManager {
         if (!usingUtil) { //Checks the input boolean for what it should set. If setting the autons
             currentAuto.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the auto positioning
         } else { //If setting the utility
-            utilAuto.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the ManagerUtil positioning
+            utilAuto.setPosition(leftBound, rightBound, topBound, bottomBound); //Sets the util positioning
         }
         return pixel; //Returns pixel so it can stack
     }
@@ -480,7 +523,7 @@ class AutonManager {
             bool desired = false; //This is what it will set the lock to when it is true (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //This checks if it is true, and if so, sets it to false
-                if (utilAutos.size() > autos.size()) {
+                if (utilAutos.size() != autos.size()) {
                     drawBG(); //Then if it was the expected value, draw the background
                     pros::delay(20); //Delay
                     drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
@@ -502,7 +545,7 @@ class AutonManager {
             bool desired = true; //This is what it will set the lock to when it is false (should redraw)
 
             if (bgRedrawLock.compare_exchange_strong(expected, desired)) { //For the same reason as explained above
-                if (autos.size() > utilAutos.size()) {
+                if (autos.size() != utilAutos.size()) {
                     drawBG(); //Draws background
                     pros::delay(20); //Refresh delay
                     drawUtilBar(); //Redraw utility bar

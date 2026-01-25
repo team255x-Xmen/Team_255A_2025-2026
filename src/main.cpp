@@ -131,8 +131,9 @@ void initialize() {
   // Initialize chassis
   chassis.initialize();
   
-  //Initializes the manager with the input autons, input utilities, utility bar vertical size (in pixels), and rows (for autons)
-  Kerry.initialize(autonPrograms, utilityAutons, 40, 2); //Adds the autons
+  //Also, overloads is abbreviated to ovls, so comments can fit on the screen
+  //Initializes the manager with the input autons, input utilities, (ovls) rows (for autons), and utility bar vertical pixel size
+  Kerry.initialize(autonPrograms, utilityAutons); //Adds the autons with 40 util bar height, 2 rows (without overloads)
   pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
   //At some point add in a color sorter and run the task here (so it runs globally)
