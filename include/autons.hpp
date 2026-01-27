@@ -29,3 +29,4 @@ void basicDrive();
 //Other utility autons
 void measure_offsets();
 void simpleOdomDrive();
+void simpleTurn();

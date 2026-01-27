@@ -728,3 +728,8 @@ void simpleOdomDrive() {
   chassis.pid_odom_set({{0_in, 12_in}, fwd, DRIVE_SPEED}, false);
   chassis.pid_wait();
 }
+
+void simpleTurn() {
+  chassis.pid_turn_set(90_deg, TURN_SPEED, false);
+  chassis.pid_wait();
+}

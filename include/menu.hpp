@@ -18,13 +18,6 @@
 //This file has been tested with one exception. It has not been tested in the autonomous phase yet
 //I will need to test out and make sure the callbacks work as expected, although that should be quick and easy
 
-struct brainPosition { //Struct to group the bounds of pixels into one name
-    int left; //The left bound
-    int right; //The right bound
-    int top; //The top bound
-    int bottom; //The bottom bound
-};
-
 #pragma once //Header guard
 #ifndef MENUREVAMP_HPP //Header check
 #define MENUREVAMP_HPP //The actual definition
@@ -53,9 +46,9 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
     }
 
     void drawBox() const { //Call when drawing box after making background
-        pros::screen::set_pen(color); //Yellow
+        pros::screen::set_pen(color); //Box color
         pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
-        pros::screen::set_pen(textColor); //Blue
+        pros::screen::set_pen(textColor); //Text color (dependent on current screen)
         if (pos.bottom - pos.top < 50|| pos.right - pos.left < 100) { //If it is too small for medium, print in small
             pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
         } else if (pos.bottom - pos.top < 100||pos.right - pos.left < 200) { //When big enough print in medium
@@ -71,6 +64,14 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
         pos.top = top; //Sets top to top
         pos.bottom = bottom; //Sets bottom to bottom
     }
+
+    private: //Section that can't be accessed even by children
+    struct brainPosition { //Struct to group the bounds of pixels into one name
+        int left; //The left bound
+        int right; //The right bound
+        int top; //The top bound
+        int bottom; //The bottom bound
+    }; //The struct need not be global or accessible by children, just the variable made from it
 
     protected: //This section can't be accessed except by the children
     string name; //The name of the member
@@ -406,6 +407,11 @@ class AutonManager {
         } //It does this for every utility
     }
 
+    struct overflowLimit { //A struct to group overflow booleans together (for the overflow system to work right)
+        bool flag = false; //Flag for if already used (in for loops). Starts false
+        bool check; //A boolean that is used to check for something. Is set in the program
+    };
+
     void setupMenu(int minVertical, int vrows) { //Sets the auton's (& ManagerUtil) positions based on what order they were added. Does not draw the screen
 
         if (vrows < 1) { //This prevents divide by 0 errors and negative row counts (not possible)
@@ -417,13 +423,24 @@ class AutonManager {
             int totalCounter = 0; //Counter for how many total autons have been placed into rows
 
             int vrowsRestore = vrows; //The temporary variable to store vrows (so it can adapt and work across multiple calls)
-            while (vrows > inputSize) { //When too many rows compared to autons needed to place
-                --vrows; //Reduce rows until the autons and the rows are equal
+            if (vrows > inputSize) { //When too many rows compared to autons needed to place
+                vrows = inputSize; //Make how many rows are needed = to how many autons there are
             }
 
             int overflow = inputSize % vrows; //Variable to store over flow (when uneven compared to row count, returns remainder)
             atomic<bool> overflowDelay{true}; //An atomic to reduce lines used (vs bool) and to act as a lock
             int basicNum = inputSize / vrows; //The basic unmodified number for each row (overflow adds to this to get every auton)
+
+            overflowLimit overflowCheck; //Variable that prevents overflow skip in systems with > 3 rows and that are
+            //almost able to add a new auton to every row (makes second to last get the extra overflow, not top row)
+
+            int magicNumber = vrows; //The magic number (The smallest multiple of rows that is bigger than the input size)
+            while (magicNumber < inputSize) { //While the magic number is smaller than the input size (no = for safety for 1 row)
+                magicNumber += vrows; //Adds to the magic number until it is bigger, acting as a multiple of rows
+            }
+            overflowCheck.check = (inputSize == magicNumber - 1); //Sets the check to if the input is one away from overflow 0
+
+            if (vrows <= 3) overflowCheck.flag = true; //If too few for overflow to matter prevent fallthrough (for 3, 2, 1 rows)
 
             for (int i = 1; i <= vrows; i++) { //For loop to save how many autons go in each row (first row is bottom, last is top)
                 if (i == 1) { //If first auton (will be last to get new auton)
@@ -436,6 +453,13 @@ class AutonManager {
                         //It moves the overflow up 1 in the "stack" changing how it works.
                         //Because of this for 4 rows (6 autons) it goes
                         // 1 2 1 2  ->  1 1 2 2         (This looks cleaner)
+                    } else if (vrows == 3&&overflow > 1) { //If on three rows and there is overflow available
+                        output.push_back(basicNum + 1); //Use that overflow in an auton
+                        --overflow; //Count down overflow (this else if makes 1 1 3  ->  1 2 2   on the screen)
+                    } else if (!overflowCheck.flag&&overflowCheck.check) { //If almost at overflow 0
+                        overflowCheck.flag = true; //First row only will need an overflow, so this makes sure this can't activate
+                        output.push_back(basicNum + 1); //Then it gives the overflow
+                        --overflow; //And decrements as usual
                     } else output.push_back(basicNum); //If overflow is at limit (saved for last one) add usual number
                 } else { //When it is the last row
                     output.push_back(inputSize - totalCounter); //Add the remaining autons needed to the last row
@@ -514,8 +538,14 @@ class AutonManager {
         return pixel; //Returns pixel so it can stack
     }
 
+    int redrawBGCounter = 0;
+
     void drawScreen() { //Draws the brain screen based on current ID and what's selected
         if (terminated) throw 1; //If already terminated, leave early.
+
+        auto utilBarRedrawCheck = [this] () { //A check that will redraw the utility bar when it starts disappearing
+            if (redrawBGCounter >= 48) drawUtilBar(); //Checks if above the threshold, and if so redraws
+        };
 
         if (getID() == 3) { //If the screen is the utility screen
 
@@ -527,8 +557,11 @@ class AutonManager {
                     drawBG(); //Then if it was the expected value, draw the background
                     pros::delay(20); //Delay
                     drawUtilBar(); //Redraw the utility bar (util bar doesn't need redraw besides when background is redrawn)
+                    ++redrawBGCounter; //Count up the redraw counter (so when it comes time the utility bar redraws as well)
                 }
             }
+
+            utilBarRedrawCheck(); //Checks if it needs to redraw
 
             for (auto &u : utilAutos) { //Goes through every utility Auton
                 textColor = WHITE; //Sets the text color to black
@@ -549,8 +582,11 @@ class AutonManager {
                     drawBG(); //Draws background
                     pros::delay(20); //Refresh delay
                     drawUtilBar(); //Redraw utility bar
+                    ++redrawBGCounter; //Increments the counter
                 }
             } //This is the opposite of what is used for the utility check
+
+            utilBarRedrawCheck(); //Checks if it needs to redraw
 
             for (auto &a : autos) { //Then it goes through every auton
                 if (screenID == 1) textColor = BLUE; //If the screen is blue, set text to blue
