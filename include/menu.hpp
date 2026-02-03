@@ -19,8 +19,8 @@
 //I will need to test out and make sure the callbacks work as expected, although that should be quick and easy
 
 #pragma once //Header guard
-#ifndef MENUREVAMP_HPP //Header check
-#define MENUREVAMP_HPP //The actual definition
+#ifndef MENU_HPP //Header check
+#define MENU_HPP //The actual definition
 
 #define BLACK 0x000000 //Abbreviates black to its hexadecimal number
 #define BLUE 0x0000FF //Abbreviates blue to its hexadecimal number
@@ -49,13 +49,16 @@ class brainSpacing { //Simple class with the name and pos variables, as well as 
         pros::screen::set_pen(color); //Box color
         pros::screen::fill_rect(pos.left, pos.top, pos.right, pos.bottom); //Draws rectangle
         pros::screen::set_pen(textColor); //Text color (dependent on current screen)
-        if (pos.bottom - pos.top < 50|| pos.right - pos.left < 100) { //If it is too small for medium, print in small
-            pros::screen::print(pros::E_TEXT_SMALL, (pos.left + 4), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
-        } else if (pos.bottom - pos.top < 100||pos.right - pos.left < 200) { //When big enough print in medium
-            pros::screen::print(pros::E_TEXT_MEDIUM, (pos.left + 8), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
-        } else { //When really big enough print in large
-            pros::screen::print(pros::E_TEXT_LARGE, (pos.left + 8), ((pos.top + pos.bottom)/2), "%s", name); //Provides the name
-        }
+
+        pros::text_format_e_t size = pros::E_TEXT_LARGE; //Large by default
+
+        u_int16_t xSize = pos.right - pos.left; //Non-negative number 16 bits big
+        u_int8_t ySize = pos.bottom - pos.top; //Non-negative number 8 bits big (0-255)
+
+        if (ySize < 100||xSize < 200) size = pros::E_TEXT_MEDIUM; //Narrows down to medium, and if too small
+        if (ySize < 50||xSize < 100) size = pros::E_TEXT_SMALL; //Narrow down to small size
+
+        pros::screen::print(size, (pos.left + 4), ((pos.top + pos.bottom)/2), "%s", name); //Print in the specified size.
     }
 
     void setPosition(int left, int right, int top, int bottom) { //Sets the member's position to the inputted numberds
@@ -213,6 +216,17 @@ class AutonManager {
     */
     void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int autonRowCount) {
         managerInit(autonomousRoutines, specialAutons, 40, autonRowCount);
+    }
+
+    /*
+     * Alternative Overload for initializing manager
+     * - Has input of two vectors and a double for utility height (converts to int for initializing)
+     * - Rows defaults to 2
+     * - Make sure to use the third argument is a double, not an int
+     *   * It converts the double to an int, truncating (rounds down)
+    */
+    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAuton, double utilityHeight) {
+        managerInit(autonomousRoutines, specialAuton, custom::num::convert<int>(utilityHeight), 2);
     }
 
     /*
