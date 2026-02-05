@@ -51,7 +51,7 @@ void default_constants() {
 }
 
 float turn(float angle) { //Formula for absolute turns. Input angle for red side and it will swap when blue is selected
-  selectedIsBlue ? (angle = -angle) : 1; //Since I'm developing on red, blue should be swapped
+  selectedIsBlue ? (angle += 180) : 1; //Since I'm developing on red, blue should be offset by half a rotation (180 deg)
   return angle;
 }
 
@@ -69,7 +69,7 @@ float descoreOdomTableL(int index, bool x) {
     break;
     case 1:
     if (x) {
-      point = blue ? 17 : -17;
+      point = blue ? 15 : -15;
     } else {
       point = blue ? -60 : 60;
     }
@@ -133,31 +133,10 @@ void simpleLeft() { //Put full left side code here
 
 
 void simpleRight() { //Put full code here
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(10_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_turn_relative_set(31_deg, TURN_SPEED, true);
+  chassis.pid_turn_set(turn(135), TURN_SPEED, true);
   chassis.pid_wait_quick();
-  intakeLower.move(127);
-  intakeUpper.move(70);
-  lockPiston.set(true);
-  chassis.pid_drive_set(14_in, 20, false);
-  chassis.pid_wait_until(4_in);
-  matchLoadPistons.set(true);
-  chassis.pid_wait_quick();
-  pros::delay(500);
-  chassis.pid_turn_relative_set(86_deg, TURN_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_drive_set(27_in, DRIVE_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_turn_relative_set(63_deg, TURN_SPEED, true);
-  chassis.pid_wait_quick();
-  chassis.pid_drive_set(-16_in, DRIVE_SPEED, true);
-  intakeUpper.move(-50);
-  lockPiston.set(false);
-  pros::delay(300);
-  chassis.pid_wait_until(2_in);
-  chassis.pid_wait_quick();
-  intakeUpper.move(127);
 }
 
 
@@ -283,13 +262,12 @@ void LeftDescore() {
 
 
 void RightDescore() {
-  master.print(0, 0, "Y: %f", descoreOdomTableR(0, false));
   chassis.pid_drive_set(26_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(23_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(70);
+  intakeUpper.move(10);
   lockPiston.set(true);
   chassis.pid_drive_set(12_in, 30, false);
   chassis.pid_wait_until(4_in);
@@ -298,15 +276,15 @@ void RightDescore() {
   pros::delay(500);
   chassis.pid_turn_relative_set(94_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(28.5_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(28_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_relative_set(64_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   /*chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   pros::delay(1400);*/
-  chassis.pid_drive_set(-15_in, DRIVE_SPEED, true);
-  intakeUpper.move(-50);
+  chassis.pid_drive_set(-9_in, DRIVE_SPEED, true);
+  intakeUpper.move(-60);
   lockPiston.set(false);
   chassis.pid_wait_until(10_in);
   chassis.pid_wait_quick();

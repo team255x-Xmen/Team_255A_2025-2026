@@ -1,4 +1,5 @@
 #include "api.h" //Pros Everything (brain, others)
+#include "EZ-Template/api.hpp" //EZ Template stuff
 #include "autons.hpp" //Autos
 #include "liblvgl/lvgl.h" //Photos and colors
 #include <vector> //Vectors
@@ -238,11 +239,11 @@ class AutonManager {
         managerInit(autonomousRoutines, specialAutons, utilityHeight, autonRowCount); //Inits with custom parameters
     }
 
-    char getID() const { //Returns the current screen ID
+    int getID() const { //Returns the current screen ID
         return screenID; //Returns it
     }
 
-    void setID(char ID) { //Sets the screen ID to input ID
+    void setID(int ID) { //Sets the screen ID to input ID
         screenID = ID; //Sets it
     }
 
@@ -364,7 +365,7 @@ class AutonManager {
     private: //Private Section of the manager
     vector<autons> autos; //Vector to store the autons
     vector<ManagerUtil> utilities; //Vector to place utilities (color and debug)
-    char screenID = 1; //1 by default
+    int screenID = 1; //1 by default
     void (*storedCallback)() = nullptr; //The callback storage
     bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
     bool terminated = false; //Tracker for if termination has occured
@@ -373,8 +374,15 @@ class AutonManager {
     bool isInit = false; //Boolean to store if the manager has been initialized
     atomic<bool> bgRedrawLock{true};
 
+    static void touchRecog() {
+        if (setupRecog) setupRecog->setupScreenRecognition();
+    }
+
     void managerInit(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight, int autonRowCount) { //Initializes the manager
         if (isInit) return; //Leaves early if already initialized
+
+        instance = this; //Initializes the instance pointer to this
+        setupRecog = this;
 
         for (auto list : autonomousRoutines) { //Takes the vector provided
             autos.push_back(list); //And stores it
@@ -404,7 +412,11 @@ class AutonManager {
         drawScreen(); //Draws the screen after trying to load
         isInit = true; //Updates the initialized value to true when done all of this
         terminated = false; //Resets termination check
+        setupScreenRecognition(); //Sets up screen recognition
+        pros::Task newTask(touchRecog);
     }
+
+    static inline AutonManager *setupRecog = nullptr;
 
     void setupUtil(int height) { //Sets up the utility buttons, based on input height
         int xPixel = 0; //Starting xPixel
@@ -478,7 +490,7 @@ class AutonManager {
                 } else { //When it is the last row
                     output.push_back(inputSize - totalCounter); //Add the remaining autons needed to the last row
                 }
-                totalCounter += output[i - 1]; //After each loop this gets updated with last addition, so that the final is correct
+                totalCounter += output.back(); //After each loop this gets updated with last addition, so that the final is correct
             }
 
             vrows = vrowsRestore; //Restores the vrow to what it was.
@@ -675,10 +687,10 @@ class AutonManager {
     void save() { //Saves the autonomous to the SD card
         ofstream autonFile("autonLog.txt"); //Opens the file (ofstream also creates the file)
         if (!autonFile.is_open()) throw 1; //If it isn't open, throw an exception
-        string outputString = "\n" + custom::num::convert<char>(getID()); //Sets it to the screen ID by default
+        string outputString = "\n" + std::to_string(getID()); //Sets it to the screen ID by default
         for (auto &a : autos) { //For every auton
             if (a.isSelected()) { //If it is selected
-                outputString = a.nameIs() + "\n" + custom::num::convert<char>(getID()); //Set the name, make a new line, add ID
+                outputString = a.nameIs() + "\n" + std::to_string(getID()); //Set the name, make a new line, add ID
             }
         }
 
@@ -730,6 +742,56 @@ class AutonManager {
         }
         autonFile.close(); //Closes the file to keep it safe
         return id; //Returns the found id
+    }
+
+    atomic<bool> touchLock{false}; //Boolean for touches (locks it using atomics)
+    static inline AutonManager *instance = nullptr; //A pointer to allow PROS to work properly
+
+    void screenTouched() { //Runs when the screen is touched
+        if (!touchLock.exchange(true)&&!terminated) { //When first entry on this screen touch and not terminated
+            pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Get the touch status
+            screenTouched(status.x, status.y); //Give it to screenTouched
+            master.print(0, 0, "AS: %-20s", selectedAuton()); //Print current auton to controller
+            pros::delay(50); //Wait so rumble can que
+            master.rumble("."); //Rumble the controller
+            store(); //Store the current auton
+        }
+    }
+
+    void screenReleased() { //When the screen is released
+        touchLock.store(false); //Allow next screen touch to activate
+    }
+
+    static void touchStatic() { //A function to point to the other functions above
+        if (instance) instance->screenTouched(); //Uses instance to call a this member through a static function
+    }
+
+    static void releaseStatic() { //The function to point to the released function
+        if (instance) instance->screenReleased(); //Derefences the callback from this to static using instance
+    }
+
+    static void setup() {
+        if (instance) instance->setupScreenRecognition();
+    }
+
+    static void timerRun() {
+        if (instance) instance->timer(5);
+    }
+
+    void setupScreenRecognition() { //Updates the touch recognition
+        pros::screen::touch_callback(touchStatic, pros::E_TOUCH_PRESSED); //Updates the pressed callback
+        pros::screen::touch_callback(releaseStatic, pros::E_TOUCH_RELEASED); //Updates the pressed callback
+        pros::Task setupTask(timerRun);
+    }
+
+    void timer(int minutes) {
+        int timeElapsed = 0;
+        double milliseconds = (minutes * 60 * 100);
+        while (timeElapsed < milliseconds&&!terminated) {
+            timeElapsed += 1000;
+            pros::delay(1000);
+        }
+        pros::Task rerunSetup(setupScreenRecognition);
     }
 };
 

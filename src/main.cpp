@@ -26,46 +26,6 @@ ez::Drive chassis(
 ez::tracking_wheel horiz_tracker(8, 2.75, 1.75);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
-bool selectorEnable = true; //The boolean to enable/disable the selector task
-std::atomic<bool> secondLock{false}; //An atomic because of multi-threading
-//So no data races occur. And the selector updates once per
-
-void screenTouch() { //Function to check where screen is pressed and then feed to auton manager
-  if (!secondLock.exchange(true)&&!Kerry.hasTerminated()) { //If prior status was false, run (Not activated then activate).
-    pros::screen_touch_status_s_t status = pros::screen::touch_status(); //Two elements. x y
-    Kerry.screenTouched(status.x, status.y); //Runs the screen check for everything
-    master.print(0, 0, "AS: %-20s", Kerry.selectedAuton()); //Print selected Auton to controller
-    pros::delay(50); //Delay so rumble can que
-    master.rumble("."); //Rumbles every brain press. So we know when autons might change
-    Kerry.store(); //Stores selected
-  } //Only runs once until screen is released
-}
-
-void screenReleased() {
-  secondLock.store(false); //Sets to false (safely across multiple activations)
-}
-
-int autonSelector() { //This is what runs the callbacks
-  master.print(0, 0, "AS: %-20s", Kerry.selectedAuton()); //When started give starting auton
-  while (selectorEnable) {
-    pros::screen::touch_callback(screenTouch, TOUCH_PRESSED); //Runs the function
-    pros::screen::touch_callback(screenReleased, TOUCH_RELEASED); //Resets for next activation
-    /*if (master.get_digital(DIGITAL_L1)&&master.get_digital(DIGITAL_R1)) { //Can only run when not connected to field
-      Kerry.store(); //Stores just to make sure
-      Kerry.terminateAutons(); //Removes gui of autons. Auton set in stone
-      selectorEnable = false; //Stops the loop
-    } //Not connected test to make sure the terminate and store work properly*/
-
-    if (Kerry.hasTerminated()) selectorEnable = false; //If terminated elsewhere, end loop
-    //Used if autonomous happens before confirmation
-    //We don't want this running through the entire program
-
-    pros::delay(20);
-  }
-
-  return 1;
-}
-
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -135,7 +95,6 @@ void initialize() {
   //Also, overloads is abbreviated to ovls, so comments can fit on the screen
   //Initializes the manager with the input autons, input utilities, (ovls) rows (for autons), and utility bar vertical pixel size
   Kerry.initialize(autonPrograms, utilityAutons); //Adds the autons with 40 util bar height, 2 rows (without overloads)
-  pros::Task runSelector(autonSelector); //Run auton selector
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
   //At some point add in a color sorter and run the task here (so it runs globally)
 }
