@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "255A 'Stoga 1/18/26",
+    "project_name": "255A Springford 2/7/26",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -424,8 +424,8 @@
       }
     },
     "upload_options": {
-      "description": "255A's code for the Conestoga Comp on 1/18/26",
-      "icon": "power"
+      "description": "255A's code for the Springford comp on 2/7/26",
+      "icon": "robot"
     },
     "use_early_access": false
   }

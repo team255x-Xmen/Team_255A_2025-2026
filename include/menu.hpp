@@ -791,7 +791,7 @@ class AutonManager {
             timeElapsed += 1000;
             pros::delay(1000);
         }
-        pros::Task rerunSetup(setupScreenRecognition);
+        pros::Task rerunSetup(setup);
     }
 };
 

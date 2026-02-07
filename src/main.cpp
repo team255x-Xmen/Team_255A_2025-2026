@@ -372,6 +372,8 @@ void opcontrol() {
   if (Kerry.skills_is_selected()) chassis.odom_xyt_set(66.75_in, -17.75_in, -90_deg); //Sets position if skills (for driver control)
   //Change based on where skills will start
 
+  bool halfUpperCalcs = false;
+
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
@@ -424,10 +426,11 @@ void opcontrol() {
 
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
+      halfUpperCalcs = !halfUpperCalcs;
     }
 
     intakeLower.move(calcIntakeSpeed(true));
-    intakeUpper.move(calcIntakeSpeed(false));
+    intakeUpper.move(halfUpperCalcs ? calcIntakeSpeed(false) / 2 : calcIntakeSpeed(false));
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
