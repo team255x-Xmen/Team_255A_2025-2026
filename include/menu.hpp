@@ -23,11 +23,13 @@
 #ifndef MENU_HPP //Header check
 #define MENU_HPP //The actual definition
 
-#define BLACK 0x000000 //Abbreviates black to its hexadecimal number
-#define BLUE 0x0000FF //Abbreviates blue to its hexadecimal number
-#define RED 0xFF0000 //Abbreviates red to its hexadecimal number
-#define YELLOW 0xFFFF00 //Abbreviates yellow to its hexadecimal number
-#define WHITE 0xFFFFFF //Abbreviates white to its hexadecimal number
+//I make them static because I don't want to pollute the global workspace outside of this file (limits them to this file)
+//I make them constant because they won't change, and they are integers
+static const int BLACK = 0x000000; //Abbreviates black to its hexadecimal number
+static const int BLUE = 0x0000FF; //Abbreviates blue to its hexadecimal number
+static const int RED = 0xFF0000; //Abbreviates red to its hexadecimal number
+static const int YELLOW = 0xFFFF00; //Abbreviates yellow to its hexadecimal number
+static const int WHITE = 0xFFFFFF; //Abbreviates white to its hexadecimal number
 //This makes it easier to read later
 
 using namespace std; //std namespace is used
@@ -199,44 +201,59 @@ extern bool selectedIsBlue;
 */
 class AutonManager {
     public:
-    
+
+    template <typename... inputAutonTypes> //Template for the input autos (... allows for multiple types)
+    void addAutons(inputAutonTypes... inputAutons) { //I want to take the multiple types
+
+        auto sendToVectors = [this] (auto inputAutonomous) { //Lambda to route the input autons to their vectors
+            using T = std::decay_t<decltype(inputAutonomous)>; //Gets the type of the current auton
+
+            if constexpr (std::is_same_v<T, autons>) { //If the type is autons
+                autos.push_back(inputAutonomous); //Push to autos
+            } else if constexpr (std::is_same_v<T, utilAutons>) { //If the type is utilAutons
+                utilAutos.push_back(inputAutonomous); //Push to utilAutos
+            }
+        };
+
+        (sendToVectors(inputAutons), ...); // Fold expression to call lambda for each inputAuton. Calls many time (... folds)
+    }
+
     /*
      * Default Function for initializing manager.
-     * - Has input of 2 vectors
      * - Defaults util bar height to 40 pixels
      * - Defaults row count to 2 rows
     */
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons) {
-        managerInit(autonomousRoutines, specialAutons, 40, 2);
+    void initialize() {
+        managerInit(40, 2);
     }
 
     /*
      * Alternative Overload for initializing manager
-     * - Has input of two vectors, and an integer for row count
+     * - Has an integer for row count
      * - Utility Bar height defaults to 40 pixels
     */
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int autonRowCount) {
-        managerInit(autonomousRoutines, specialAutons, 40, autonRowCount);
+    void initialize(int autonRowCount) {
+        managerInit(40, autonRowCount);
     }
 
     /*
      * Alternative Overload for initializing manager
-     * - Has input of two vectors and a double for utility height (converts to int for initializing)
+     * - Has input of a double for utility height (converts to int for initializing)
      * - Rows defaults to 2
-     * - Make sure to use the third argument is a double, not an int
+     * - Make sure to use the argument as a double, not an int
      *   * It converts the double to an int, truncating (rounds down)
     */
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAuton, double utilityHeight) {
-        managerInit(autonomousRoutines, specialAuton, custom::num::convert<int>(utilityHeight), 2);
+    void initialize(double utilityHeight) {
+        managerInit(custom::num::convert<int>(utilityHeight), 2);
     }
 
     /*
      * Fully custom alternative overload for initializing manager
-     * - Input of 2 vectors, utility height, and row count
+     * - utility height, and row count (ints)
      * - Allows for fully custom auton selector
     */
-    void initialize(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int autonRowCount, int utilityHeight) {
-        managerInit(autonomousRoutines, specialAutons, utilityHeight, autonRowCount); //Inits with custom parameters
+    void initialize(int autonRowCount, int utilityHeight) {
+        managerInit(utilityHeight, autonRowCount); //Inits with custom parameters
     }
 
     int getID() const { //Returns the current screen ID
@@ -365,7 +382,7 @@ class AutonManager {
     private: //Private Section of the manager
     vector<autons> autos; //Vector to store the autons
     vector<ManagerUtil> utilities; //Vector to place utilities (color and debug)
-    int screenID = 1; //1 by default
+    unsigned short int screenID = 1; //1 by default
     void (*storedCallback)() = nullptr; //The callback storage
     bool autoIsSelected = true; //Global Tracker for autons. Auton does start selected by default
     bool terminated = false; //Tracker for if termination has occured
@@ -378,19 +395,11 @@ class AutonManager {
         if (setupRecog) setupRecog->setupScreenRecognition();
     }
 
-    void managerInit(vector<autons> autonomousRoutines, vector<utilAutons> specialAutons, int utilityHeight, int autonRowCount) { //Initializes the manager
+    void managerInit(int utilityHeight, int autonRowCount) { //Initializes the manager
         if (isInit) return; //Leaves early if already initialized
 
         instance = this; //Initializes the instance pointer to this
         setupRecog = this;
-
-        for (auto list : autonomousRoutines) { //Takes the vector provided
-            autos.push_back(list); //And stores it
-        }
-
-        for (auto autos : specialAutons) { //Takes the utility autons
-            utilAutos.push_back(autos); //And stores them
-        }
 
         for (int i = 1; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
             string name = ""; //Empty string for the name
@@ -791,7 +800,7 @@ class AutonManager {
             timeElapsed += 1000;
             pros::delay(1000);
         }
-        pros::Task rerunSetup(setup);
+        if (!terminated) {pros::Task rerunSetup(setup);} //If terminated prevent infinite loop
     }
 };
 

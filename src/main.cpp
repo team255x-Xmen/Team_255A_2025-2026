@@ -65,24 +65,19 @@ void initialize() {
   //The manager switches between the callbacks as necessary
   //The manager also auto-configures sizing, so no need to worry about it anymore
 
-  std::vector<autons> autonPrograms; //Vector to store the autons
-  //This will reduce how much code I need to add, and abstracts it
-  std::vector<utilAutons> utilityAutons; //Another vector for utility autons
-
-  autonPrograms.push_back(autons("L Simple", simpleLeftSideB, simpleLeftSideR, true)); //Each gets
-  autonPrograms.push_back(autons("R Simple", simpleRightSideB, simpleRightSideR));     //added to the vector
-  autonPrograms.push_back(autons("L Descore", LeftDescoreB, LeftDescoreR));            //with all the qualities
-  autonPrograms.push_back(autons("R Descore", RightDescoreB, RightDescoreR));          //So later the vector
-  autonPrograms.push_back(autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR));               //Can just be run copied
-  autonPrograms.push_back(autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR));             //And reduce lines
-  
-
-  //Utilities
-  utilityAutons.push_back(utilAutons("Skills", skillsAuton, true)); //And stop me from forgetting stuff
-  utilityAutons.push_back(utilAutons("Simple Drive", basicDrive)); //The vectors get auto added when initializing
-  utilityAutons.push_back(utilAutons("Odom Diag", measure_offsets));
-  utilityAutons.push_back(utilAutons("Simple Odom", simpleOdomDrive));
-  utilityAutons.push_back(utilAutons("Simple Turn", simpleTurn));
+  Kerry.addAutons( //Adds the autos under one term. Any order works
+    autons("L Simple", simpleLeftSideB, simpleLeftSideR, true), //Left simple auto
+    autons("R Simple", simpleRightSideB, simpleRightSideR), //Right simple auto
+    autons("L Descore", LeftDescoreB, LeftDescoreR), //Left descore
+    autons("R Descore", RightDescoreB, RightDescoreR), //Right descore
+    autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR), //Left 2 goal
+    autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR), //Right 2 goal
+    utilAutons("Skills", skillsAuton, true), //Skills
+    utilAutons("Simple Drive", basicDrive), //Simple 4-inch drive for when partner has AWP
+    utilAutons("Odom Diag", measure_offsets), //Diagnostic (made by EZ Template)
+    utilAutons("Simple Odom", simpleOdomDrive), //A simple test odom
+    utilAutons("Simple Turn", simpleTurn) //A simple turn (90 degrees)
+  );
   //For utilities (single callback autons) they go:
     //name, callback, (overload) is_skills;
   //They are for single callback autons, and get put into the utilities section
@@ -93,8 +88,8 @@ void initialize() {
   chassis.initialize();
   
   //Also, overloads is abbreviated to ovls, so comments can fit on the screen
-  //Initializes the manager with the input autons, input utilities, (ovls) rows (for autons), and utility bar vertical pixel size
-  Kerry.initialize(autonPrograms, utilityAutons); //Adds the autons with 40 util bar height, 2 rows (without overloads)
+  //Initializes the manager with (ovls) rows (for autons), and utility bar vertical pixel size
+  Kerry.initialize(); //Adds the autons with 40 util bar height and 2 rows (without overloads)
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
   //At some point add in a color sorter and run the task here (so it runs globally)
 }
@@ -427,6 +422,9 @@ void opcontrol() {
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
       halfUpperCalcs = !halfUpperCalcs;
+      master.print(0, 0, "%-26s", halfUpperCalcs ? "Half Speed" : "Full Speed");
+      pros::delay(50);
+      master.rumble(".");
     }
 
     intakeLower.move(calcIntakeSpeed(true));
