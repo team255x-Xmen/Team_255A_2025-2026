@@ -68,8 +68,8 @@ void initialize() {
   Kerry.addAutons( //Adds the autos under one term. Any order works
     autons("L Simple", simpleLeftSideB, simpleLeftSideR, true), //Left simple auto
     autons("R Simple", simpleRightSideB, simpleRightSideR), //Right simple auto
-    autons("L Descore", LeftDescoreB, LeftDescoreR), //Left descore
-    autons("R Descore", RightDescoreB, RightDescoreR), //Right descore
+    //autons("L Descore", LeftDescoreB, LeftDescoreR), //Left descore
+    //autons("R Descore", RightDescoreB, RightDescoreR), //Right descore
     autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR), //Left 2 goal
     autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR), //Right 2 goal
     //autons("Solo AWP", soloAWPB, soloAWPR), //Solo AWP auton
