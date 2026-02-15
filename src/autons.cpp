@@ -217,7 +217,7 @@ void leftDuo() { //Full code
   intakeUpper.move(90);
   pros::delay(800);
   intakeUpper.move(20);
-  chassis.pid_drive_set(48_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(46_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(turn(-90), TURN_SPEED, true);
   chassis.pid_wait_quick();
@@ -445,6 +445,18 @@ void LeftDescoreR() {
 void RightDescoreR() {
   rightR();
   RightDescore();
+}
+
+void soloAWPB() {
+  chassis.odom_xyt_set(0_in, 0_in, 0_deg);
+
+  
+}
+
+void soloAWPR() {
+  chassis.odom_xyt_set(0_in, 0_in, 0_deg);
+
+
 }
 
 void skillsAuton() { // I want to eventually be using odom for this

@@ -202,9 +202,10 @@ extern bool selectedIsBlue;
 class AutonManager {
     public:
 
-    template <typename... inputAutonTypes> //Template for the input autos (... allows for multiple types)
-    void addAutons(inputAutonTypes... inputAutons) { //I want to take the multiple types
-
+    //Template for the input autos (... allows for unspecified input size)
+    template <typename... inputAutonTypes> //Allows for any amount of different autons to be placed into manager.
+    void addAutons(inputAutonTypes... inputAutons) { //Function to add any autons or utilAutons class objects
+        //I want to take the multiple types
         auto sendToVectors = [this] (auto inputAutonomous) { //Lambda to route the input autons to their vectors
             using T = std::decay_t<decltype(inputAutonomous)>; //Gets the type of the current auton
 

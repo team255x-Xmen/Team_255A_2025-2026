@@ -11,6 +11,7 @@ void LeftDuoAWPB();
 void RightDuoAWPB();
 void LeftDescoreB();
 void RightDescoreB();
+void soloAWPB();
 
 //Red
 void simpleLeftSideR();
@@ -19,6 +20,7 @@ void LeftDuoAWPR();
 void RightDuoAWPR();
 void LeftDescoreR();
 void RightDescoreR();
+void soloAWPR();
 
 //Skills
 void skillsAuton();

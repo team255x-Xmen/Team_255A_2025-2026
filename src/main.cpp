@@ -72,6 +72,7 @@ void initialize() {
     autons("R Descore", RightDescoreB, RightDescoreR), //Right descore
     autons("L 2 Goal", LeftDuoAWPB, LeftDuoAWPR), //Left 2 goal
     autons("R 2 Goal", RightDuoAWPB, RightDuoAWPR), //Right 2 goal
+    //autons("Solo AWP", soloAWPB, soloAWPR), //Solo AWP auton
     utilAutons("Skills", skillsAuton, true), //Skills
     utilAutons("Simple Drive", basicDrive), //Simple 4-inch drive for when partner has AWP
     utilAutons("Odom Diag", measure_offsets), //Diagnostic (made by EZ Template)
