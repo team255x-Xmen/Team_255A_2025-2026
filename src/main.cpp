@@ -14,7 +14,7 @@ ez::Drive chassis(
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
     {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
 
-    7,      // IMU Port
+    9,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
@@ -77,7 +77,8 @@ void initialize() {
     utilAutons("Simple Drive", basicDrive), //Simple 4-inch drive for when partner has AWP
     utilAutons("Odom Diag", measure_offsets), //Diagnostic (made by EZ Template)
     utilAutons("Simple Odom", simpleOdomDrive), //A simple test odom
-    utilAutons("Simple Turn", simpleTurn) //A simple turn (90 degrees)
+    utilAutons("Simple Turn", simpleTurn), //A simple turn (90 degrees)
+    utilAutons("Table", printTable)
   );
   //For utilities (single callback autons) they go:
     //name, callback, (overload) is_skills;

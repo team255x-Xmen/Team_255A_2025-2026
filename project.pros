@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "255A GVMS 2/15/26",
+    "project_name": "255A Stoga 3/1/26",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -424,8 +424,8 @@
       }
     },
     "upload_options": {
-      "description": "255A's code for the GVMS comp on 2/15/26",
-      "icon": "X"
+      "description": "255A's code for the Conestoga comp on 3/1/26",
+      "icon": "power"
     },
     "use_early_access": false
   }

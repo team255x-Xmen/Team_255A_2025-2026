@@ -266,6 +266,12 @@ class AutonManager {
     }
 
     void screenTouched(int x, int y) { //Checks everything for touch identification, then redraws screen
+
+        if (utilities[3].containsPoint(x, y)) {
+            autonomous();
+            return;
+        }
+
         for (auto &u : utilities) { //Checks utilities
             if (u.containsPoint(x, y)) setID(u.getID()); //Updates ID if it should
         }
@@ -402,11 +408,12 @@ class AutonManager {
         instance = this; //Initializes the instance pointer to this
         setupRecog = this;
 
-        for (int i = 1; i <= 3; ++i) { //Creates the utility sections. Can add more by adjusting numbers
+        for (int i = 1; i <= 4; ++i) { //Creates the utility sections. Can add more by adjusting numbers
             string name = ""; //Empty string for the name
             if (i == 1) name = "Blue"; //Blue has ID of 1
             if (i == 2) name = "Red"; //Red has ID of 2
             if (i == 3) name = "Utility"; //Utility has ID of 3
+            if (i == 4) name = "Run Auto"; //A run auto button
             utilities.push_back(ManagerUtil(name, i)); //Adds them to utility
         }
 
@@ -798,8 +805,8 @@ class AutonManager {
         int timeElapsed = 0;
         double milliseconds = (minutes * 60 * 100);
         while (timeElapsed < milliseconds&&!terminated) {
-            timeElapsed += 1000;
-            pros::delay(1000);
+            timeElapsed += 10000;
+            pros::delay(10000);
         }
         if (!terminated) {pros::Task rerunSetup(setup);} //If terminated prevent infinite loop
     }
