@@ -366,7 +366,7 @@ void opcontrol() {
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
   //chassis.opcontrol_joystick_practicemode_toggle(true); //Comment or remove at comps
-  if (Kerry.skills_is_selected()) chassis.odom_xyt_set(66.75_in, -17.75_in, -90_deg); //Sets position if skills (for driver control)
+  if (Kerry.skills_is_selected()) chassis.odom_xyt_set(-55_in, -17.75_in, 90_deg); //Sets position if skills (for driver control)
   //Change based on where skills will start
 
   bool halfUpperCalcs = false;
@@ -392,6 +392,7 @@ void opcontrol() {
       intakeGroupToggle(); //Runs toggle
       if (!pros::competition::is_connected()) { //Also checks if not connected
         debugScreen(); //And then prints debug screen
+        chassis.odom_xyt_set(-55_in, -17.75_in, 90_deg);
       }
     }
 

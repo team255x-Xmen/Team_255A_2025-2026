@@ -12,8 +12,9 @@ extern Drive chassis;
 
 //inline pros::adi::Pneumatics matchLoadPistons('A', false);
 //Prob not needed added in case want to compare
-inline pros::Motor intakeLower(11);
-inline pros::Motor intakeUpper(-12);
-inline ez::Piston matchLoadPistons('A', false);
-inline ez::Piston lockPiston('B', false);
-inline ez::Piston descorePiston('C', false); //False is descore position
+
+inline pros::MotorGroup intakeLower({11, 13}); //The motors for the lower intake at ports 11 & 13
+inline pros::Motor intakeUpper(-12); //The upper intake Motor
+inline ez::Piston matchLoadPistons('A', false); //The piston to match load
+inline ez::Piston lockPiston('B', false); //The piston to enable the ball lock
+inline ez::Piston descorePiston('C', false); //False is descore position (piston for descore wing)
