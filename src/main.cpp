@@ -14,7 +14,7 @@ ez::Drive chassis(
     {-1, 2, -3},     // Left Chassis Ports (negative port will reverse it!)
     {4, -5, 7},  // Right Chassis Ports (negative port will reverse it!)
 
-    9,      // IMU Port
+    10,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     360);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
@@ -389,10 +389,13 @@ void opcontrol() {
     // . . .
 
     if (master.get_digital_new_press(DIGITAL_LEFT)) {
-      intakeGroupToggle(); //Runs toggle
+      halfUpperCalcs = !halfUpperCalcs;
+      master.print(0, 0, "%-26s", halfUpperCalcs ? "Half Speed" : "Full Speed");
+      pros::delay(50);
+      master.rumble(".");
       if (!pros::competition::is_connected()) { //Also checks if not connected
         debugScreen(); //And then prints debug screen
-        chassis.odom_xyt_set(-55_in, -17.75_in, 90_deg);
+        //chassis.odom_xyt_set(-55_in, -17.75_in, 90_deg);
       }
     }
 
@@ -400,7 +403,7 @@ void opcontrol() {
       driveSwitch();
     }
 
-    if (master.get_digital_new_press(DIGITAL_A)) {
+    /*if (master.get_digital_new_press(DIGITAL_A)) {
       odomScore(); //Run score task
     }
 
@@ -410,7 +413,7 @@ void opcontrol() {
 
     if (master.get_digital_new_press(DIGITAL_X)) {
       odomCloseScore(); //Moves to scoring pos (when close to goal already)
-    }
+    }*/
 
     if (master.get_digital_new_press(DIGITAL_UP)) {
       lockPiston.set(!lockPiston.get());
@@ -424,10 +427,6 @@ void opcontrol() {
 
     if (master.get_digital_new_press(DIGITAL_DOWN)) {
       matchLoadPistons.set(!matchLoadPistons.get());  //Piston toggle
-      halfUpperCalcs = !halfUpperCalcs;
-      master.print(0, 0, "%-26s", halfUpperCalcs ? "Half Speed" : "Full Speed");
-      pros::delay(50);
-      master.rumble(".");
     }
 
     intakeLower.move(calcIntakeSpeed(true));

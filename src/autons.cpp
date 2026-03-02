@@ -222,7 +222,7 @@ void leftDuo() { //Full code
   pros::delay(500);
   intakeLower.move(127);
   intakeUpper.move(20);
-  chassis.pid_drive_set(46_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(47_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(turn(-90), TURN_SPEED, true);
   chassis.pid_wait_quick();
@@ -252,12 +252,12 @@ void rightDuo() { //I think you get the drill at this point
   pros::delay(300);
   chassis.pid_turn_set(turn(45), TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(11_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(13_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   intakeLower.move(-127);
-  pros::delay(800);
+  pros::delay(1200);
   intakeLower.move(127);
-  chassis.pid_drive_set(-47_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-48_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(turn(-90), TURN_SPEED, true);
   chassis.pid_wait_quick();
@@ -469,42 +469,72 @@ void soloAWPR() {
 void skillsAuton() { // I want to eventually be using odom for this
   chassis.odom_theta_set(180_deg);
 
-  chassis.pid_drive_set(28_in, DRIVE_SPEED, true);
+  auto matchLoad = [] () {
+    int i = 0;
+    chassis.drive_brake_set(pros::motor_brake_mode_e::E_MOTOR_BRAKE_COAST);
+    intakeLower.move(127);
+    intakeUpper.move(80);
+    while (i < 7) {
+      ++i;
+      pros::delay(400);
+      chassis.pid_drive_set(-3_in, DRIVE_SPEED, false);
+      chassis.pid_wait_quick();
+      pros::delay(100);
+      chassis.pid_drive_set(3.6_in, 127, false);
+      chassis.pid_wait_quick();
+      if (i == 6) intakeUpper.move(10);
+    }
+
+    intakeUpper.move(0);
+    chassis.drive_brake_set(pros::motor_brake_mode_e::E_MOTOR_BRAKE_HOLD);
+  };
+
+  auto intakeShimmy = [] () {
+    intakeLower.move(-127);
+    pros::delay(100);
+    intakeLower.move(127);
+    pros::delay(1800);
+  };
+
+  chassis.pid_drive_set(28.5_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
 
   matchLoadPistons.set(true);
   chassis.pid_turn_set(-90_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
 
-  chassis.pid_drive_set(2_in, DRIVE_SPEED, false);
+  chassis.pid_drive_set(8_in, DRIVE_SPEED, false);
   chassis.pid_wait_quick();
   intakeLower.move(127);
-  intakeUpper.move(60);
-  pros::delay(1000);
+  intakeUpper.move(40);
+  matchLoad();
+  lockPiston.set(false);
 
-  chassis.pid_drive_set(-25_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-28_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   pros::delay(100);
+  matchLoadPistons.set(false);
 
-  intakeUpper.move(127);
-  pros::delay(700);
+  intakeShimmy();
 
   chassis.pid_drive_set(4_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
+  descorePiston.set(true);
   chassis.pid_turn_set(220_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(17_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(-90.5_deg, TURN_SPEED, true);
-  matchLoadPistons.set(false);
   chassis.pid_wait_quick();
 
-  chassis.pid_drive_set(-24_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-26_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_turn_relative_set(-8_deg, TURN_SPEED, false);
+  chassis.pid_turn_relative_set(-15_deg, TURN_SPEED, false);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(-34_in, DRIVE_SPEED, true);
-  chassis.pid_wait_until(12_in);
+  chassis.pid_wait_until(-3_in);
+  descorePiston.set(false);
+  chassis.pid_wait_until(-12_in);
   descorePiston.set(true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(-80_deg, TURN_SPEED, true);
@@ -515,40 +545,42 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_turn_set(45_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
+  matchLoadPistons.set(true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(90_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(6_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(8_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  intakeUpper.move(70);
-  pros::delay(1000);
+  intakeUpper.move(40);
+  matchLoad();
+  lockPiston.set(false);
 
-  chassis.pid_drive_set(-26_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   pros::delay(100);
-  intakeUpper.move(127);
-  pros::delay(800);
+  intakeShimmy();
 
   intakeUpper.move(60);
   chassis.pid_drive_set(5_in, DRIVE_SPEED, true);
+  matchLoadPistons.set(false);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(0_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(93_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(91_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(90_deg, TURN_SPEED, true);
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
 
-  chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(20_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  intakeUpper.move(70);
-  pros::delay(1000);
+  intakeUpper.move(40);
+  matchLoad();
+  lockPiston.set(false);
   chassis.pid_drive_set(-27.5_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   pros::delay(100);
-  intakeUpper.move(127);
-  pros::delay(800);
+  intakeShimmy();
 
   chassis.pid_drive_set(4_in, DRIVE_SPEED, true);
   matchLoadPistons.set(false);
@@ -558,16 +590,17 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_drive_set(16_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(90_deg, TURN_SPEED, true);
-  intakeUpper.move(60);
+  intakeUpper.move(50);
   chassis.pid_wait_quick();
 
   chassis.pid_drive_set(-25_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_turn_relative_set(-8_deg, TURN_SPEED, true);
+  chassis.pid_turn_relative_set(-15_deg, TURN_SPEED, true);
   chassis.pid_wait_quick();
-  descorePiston.set(false);
   chassis.pid_drive_set(-34_in, DRIVE_SPEED, true);
-  chassis.pid_wait_until(12_in);
+  chassis.pid_wait_until(-3_in);
+  descorePiston.set(false);
+  chassis.pid_wait_until(-12_in);
   descorePiston.set(true);
   chassis.pid_wait_quick();
   chassis.pid_turn_set(100_deg, TURN_SPEED, true);
@@ -583,16 +616,16 @@ void skillsAuton() { // I want to eventually be using odom for this
   matchLoadPistons.set(true);
   chassis.pid_wait_quick();
 
-  chassis.pid_drive_set(6_in, DRIVE_SPEED, true);
-  intakeUpper.move(70);
+  chassis.pid_drive_set(7_in, DRIVE_SPEED, true);
+  intakeUpper.move(40);
   chassis.pid_wait_quick();
-  pros::delay(1000);
+  matchLoad();
+  lockPiston.set(false);
 
-  chassis.pid_drive_set(-26_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-27_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
   pros::delay(100);
-  intakeUpper.move(127);
-  pros::delay(800);
+  intakeShimmy();
 
   chassis.odom_theta_set(-90_deg);
   matchLoadPistons.set(false);
@@ -605,9 +638,9 @@ void skillsAuton() { // I want to eventually be using odom for this
   chassis.pid_wait_quick();
   chassis.pid_turn_set(-90_deg, 50, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(9_in, DRIVE_SPEED, true);
+  chassis.pid_drive_set(-10_in, DRIVE_SPEED, true);
   chassis.pid_wait_quick();
-  chassis.pid_drive_set(40_in, 127, false);
+  chassis.pid_drive_set(50_in, 127, false);
   chassis.pid_wait_quick();
 }
 
