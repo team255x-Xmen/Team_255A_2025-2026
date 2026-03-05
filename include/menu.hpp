@@ -30,6 +30,7 @@ static const int BLUE = 0x0000FF; //Abbreviates blue to its hexadecimal number
 static const int RED = 0xFF0000; //Abbreviates red to its hexadecimal number
 static const int YELLOW = 0xFFFF00; //Abbreviates yellow to its hexadecimal number
 static const int WHITE = 0xFFFFFF; //Abbreviates white to its hexadecimal number
+static const int TRANSPARENT = 0x00000000; //The transparent color (extra 00 at start to set a to 0)
 //This makes it easier to read later
 
 using namespace std; //std namespace is used
@@ -189,6 +190,7 @@ class utilAutons : public brainSpacing { //Class that holds utility autons. Pare
 };
 
 extern bool selectedIsBlue;
+extern ez::Drive chassis; //The chassis for the bot
 
 /*
  * This class does everything for the autonomous selector
@@ -431,6 +433,7 @@ class AutonManager {
         terminated = false; //Resets termination check
         setupScreenRecognition(); //Sets up screen recognition
         pros::Task newTask(touchRecog);
+        pros::Task screenTask(screenStatic);
     }
 
     static inline AutonManager *setupRecog = nullptr;
@@ -559,7 +562,7 @@ class AutonManager {
     int setPosition(int pixel, int totalObjects, autons& currentAuto, int verticalPixel, utilAutons& utilAuto, bool usingUtil, int availableYPixels, int vertRows) { //Sets the input member's position
         pixel += 4; //Adds 4 for starting offset
         int leftBound = pixel; //What the left bound is
-        int horizontalDistance = (480 - (totalObjects * 8)) / totalObjects; //*8 is for spacing, then divide for the slide
+        int horizontalDistance = ((480 - (totalObjects * 8)) / totalObjects) / 2; //*8 is for spacing, then divide for the slide
         pixel += horizontalDistance; //Moves to the right edge
         int rightBound = pixel; //Right bound is now the current pixel
         pixel += 4; //Moves it right 4 again
@@ -809,6 +812,48 @@ class AutonManager {
             pros::delay(10000);
         }
         if (!terminated) {pros::Task rerunSetup(setup);} //If terminated prevent infinite loop
+    }
+
+    static void screenStatic() { //The static function to run the background task loop
+        if (instance) instance->backgroundTask();
+    }
+
+    static void backgroundTask() { //The background task to print xyt to screen
+        double prevX = chassis.odom_x_get(); //Sets the previous x to current
+        double prevY = chassis.odom_y_get(); //Sets the previous y to current
+        double prevT = chassis.odom_theta_get(); //Sets previous theta to current
+        int delayTime; //The delay time to change how long the loop is
+
+        while (true) { //While the program is running
+
+            delayTime = 80; //Delay is 80 milliseconds by default
+
+            if (chassis.odom_x_get() > prevX + 0.25||chassis.odom_x_get() < prevX - 0.25) { //If out of tolerance
+                pros::screen::set_pen(WHITE); //Set pen to white
+                pros::screen::set_eraser(TRANSPARENT); //Set to transparent white
+                pros::screen::print(pros::E_TEXT_MEDIUM, 260, 60, "X: %-10f", chassis.odom_x_get()); //Updates screen
+                delayTime = 20; //Resfresh to next loop faster
+                prevX = chassis.odom_x_get(); //Updates the previous x so it can detect next change
+            }
+
+            if (chassis.odom_y_get() > prevY + 0.25||chassis.odom_y_get() < prevY - 0.25) { //Out of tolerance
+                pros::screen::set_pen(WHITE); //Set pen to white
+                pros::screen::set_eraser(TRANSPARENT); //Set to transparent white
+                pros::screen::print(pros::E_TEXT_MEDIUM, 260, 120, "Y: %-10f", chassis.odom_y_get()); //Update screen
+                delayTime = 20; //Increase delay
+                prevY = chassis.odom_y_get(); //Updates the previous y
+            }
+
+            if (chassis.odom_theta_get() > prevT + 0.25||chassis.odom_theta_get() < prevT - 0.25) { //Tolerance check
+                pros::screen::set_pen(WHITE); //Set pen to white
+                pros::screen::set_eraser(TRANSPARENT); //Set to transparent white
+                pros::screen::print(pros::E_TEXT_MEDIUM, 260, 180, "Theta: %-10f", chassis.odom_theta_get()); //Update the screen
+                delayTime = 20; //Increase delay
+                prevT = chassis.odom_theta_get(); //Updates the previous theta
+            }
+
+            pros::delay(delayTime); //Delay to save resources
+        }
     }
 };
 
